@@ -167,8 +167,8 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
 
   if (loading && !data) {
     return (
-      <div className="py-20 text-center text-slate-400 text-sm flex items-center justify-center gap-2">
-        <RefreshCw className="h-5 w-5 animate-spin text-indigo-500" />
+      <div className="py-20 text-center text-slate-500 text-sm flex items-center justify-center gap-2">
+        <RefreshCw className="h-5 w-5 animate-spin text-indigo-600" />
         Завантаження аналітики та показників успішності...
       </div>
     );
@@ -176,7 +176,7 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
 
   if (!data) {
     return (
-      <div className="p-8 text-center border border-slate-800 rounded-3xl bg-slate-900/40 text-slate-400 text-xs">
+      <div className="p-8 text-center border border-slate-200 rounded-3xl bg-slate-50/70 text-slate-500 text-xs">
         Не вдалося завантажити аналітичні дані компанії.
       </div>
     );
@@ -203,30 +203,30 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
     <div className="space-y-6">
       {/* 1. KPI SUMMARY CARDS */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
-        <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
             Всього працівників
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-white">
+            <span className="text-2xl sm:text-3xl font-black text-slate-900">
               {data.summary.totalEmployees}
             </span>
-            <Users className="h-5 w-5 text-indigo-400 shrink-0" />
+            <Users className="h-5 w-5 text-indigo-600 shrink-0" />
           </div>
-          <span className="text-[11px] text-slate-500">У схемі "{tenantSubdomain}"</span>
+          <span className="text-[11px] text-slate-400">У схемі "{tenantSubdomain}"</span>
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
             Активні за 30 днів
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-emerald-400">
+            <span className="text-2xl sm:text-3xl font-black text-emerald-600">
               {data.summary.activeEmployeesCount}
             </span>
-            <Activity className="h-5 w-5 text-emerald-400 shrink-0" />
+            <Activity className="h-5 w-5 text-emerald-600 shrink-0" />
           </div>
-          <span className="text-[11px] text-slate-500">
+          <span className="text-[11px] text-slate-400">
             {Math.round(
               (data.summary.activeEmployeesCount / Math.max(data.summary.totalEmployees, 1)) * 100
             )}
@@ -234,57 +234,57 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
           </span>
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
             Сер. прогрес курсів
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-indigo-300">
+            <span className="text-2xl sm:text-3xl font-black text-indigo-600">
               {data.summary.avgCompletionRate}%
             </span>
-            <TrendingUp className="h-5 w-5 text-indigo-400 shrink-0" />
+            <TrendingUp className="h-5 w-5 text-indigo-600 shrink-0" />
           </div>
-          <span className="text-[11px] text-slate-500">Завершення матеріалів</span>
+          <span className="text-[11px] text-slate-400">Завершення матеріалів</span>
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
             Сер. бал тестувань
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-purple-400">
+            <span className="text-2xl sm:text-3xl font-black text-purple-600">
               {data.summary.avgQuizScore}%
             </span>
-            <Award className="h-5 w-5 text-purple-400 shrink-0" />
+            <Award className="h-5 w-5 text-purple-600 shrink-0" />
           </div>
-          <span className="text-[11px] text-slate-500">
+          <span className="text-[11px] text-slate-400">
             {data.summary.quizPassRate}% успішних здач
           </span>
         </div>
 
-        <div className="col-span-2 lg:col-span-1 p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-500/15 via-slate-900/80 to-slate-900/80 border border-amber-500/30 shadow-xl space-y-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-300 block">
+        <div className="col-span-2 lg:col-span-1 p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50/60 border border-amber-200 shadow-sm space-y-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-800 block">
             Нараховані бали ⭐
           </span>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-black text-amber-400">
+            <span className="text-2xl sm:text-3xl font-black text-amber-600">
               {data.summary.totalPointsAwarded}
             </span>
-            <Star className="h-5 w-5 text-amber-400 shrink-0 fill-amber-400" />
+            <Star className="h-5 w-5 text-amber-500 shrink-0 fill-amber-400" />
           </div>
-          <span className="text-[11px] text-slate-400">Гейміфікація компанії</span>
+          <span className="text-[11px] text-amber-700/80">Гейміфікація компанії</span>
         </div>
       </div>
 
       {/* 2. CONTROLS: SEARCH, FILTER, EXPORT */}
-      <div className="p-6 rounded-3xl bg-slate-900/60 border border-slate-800 shadow-xl space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-indigo-400" />
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-indigo-600" />
               Зведена таблиця успішності та активності співробітників
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Моніторинг проходження лекцій, складання тестів та останнього входу працівників.
             </p>
           </div>
@@ -292,16 +292,16 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
           <div className="flex items-center gap-2">
             <button
               onClick={handleExportCsv}
-              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-700"
+              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-200"
               title="Завантажити звіт у форматі CSV"
             >
-              <Download className="h-3.5 w-3.5 text-indigo-400" />
+              <Download className="h-3.5 w-3.5 text-indigo-600" />
               Експортувати звіт (CSV)
             </button>
 
             <button
               onClick={loadAnalytics}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition border border-slate-700"
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition border border-slate-200"
               title="Оновити дані"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -317,16 +317,16 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
               placeholder="Пошук за ім'ям, email або роллю працівника..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-indigo-500"
             />
-            <Search className="h-4 w-4 text-slate-500 absolute left-3 top-3" />
+            <Search className="h-4 w-4 text-slate-400 absolute left-3 top-3" />
           </div>
 
           <div className="sm:col-span-5 relative">
             <select
               value={selectedCourseFilter}
               onChange={(e) => setSelectedCourseFilter(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 appearance-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-indigo-500 appearance-none"
             >
               <option value="all">Усі навчальні курси компанії</option>
               {data.courses.map((c) => (
@@ -335,21 +335,21 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
                 </option>
               ))}
             </select>
-            <Filter className="h-3.5 w-3.5 text-slate-500 absolute right-3.5 top-3.5 pointer-events-none" />
+            <Filter className="h-3.5 w-3.5 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none" />
           </div>
         </div>
 
         {/* 3. EMPLOYEE TABLE */}
         {filteredEmployees.length === 0 ? (
-          <div className="py-14 text-center border-2 border-dashed border-slate-800 rounded-2xl bg-slate-950/40 space-y-2">
-            <Users className="h-8 w-8 text-slate-600 mx-auto" />
-            <p className="text-xs text-slate-400">Співробітників за вказаними фільтрами не знайдено.</p>
+          <div className="py-14 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/70 space-y-2">
+            <Users className="h-8 w-8 text-slate-400 mx-auto" />
+            <p className="text-xs text-slate-500">Співробітників за вказаними фільтрами не знайдено.</p>
           </div>
         ) : (
-          <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-950">
+          <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 font-semibold sticky top-0">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold sticky top-0">
                   <tr>
                     <th className="p-3.5">Працівник</th>
                     <th className="p-3.5">Роль</th>
@@ -366,7 +366,7 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
                     <th className="p-3.5 text-right">Дії</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-850">
+                <tbody className="divide-y divide-slate-100">
                   {filteredEmployees.map((emp) => {
                     const selectedCourseProgress =
                       selectedCourseFilter !== "all"
@@ -374,11 +374,11 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
                         : null;
 
                     return (
-                      <tr key={emp.id} className="hover:bg-slate-900/40 transition">
+                      <tr key={emp.id} className="hover:bg-slate-50/80 transition">
                         {/* Employee Name & Email */}
                         <td className="p-3.5">
-                          <div className="font-semibold text-white">{emp.name}</div>
-                          <div className="text-[11px] font-mono text-slate-400 mt-0.5">{emp.email}</div>
+                          <div className="font-semibold text-slate-900">{emp.name}</div>
+                          <div className="text-[11px] font-mono text-slate-500 mt-0.5">{emp.email}</div>
                         </td>
 
                         {/* Role */}
@@ -386,10 +386,10 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
                               emp.role === "admin"
-                                ? "bg-purple-950/60 border-purple-800 text-purple-300"
+                                ? "bg-purple-50 border-purple-200 text-purple-700"
                                 : emp.role === "instructor"
-                                ? "bg-indigo-950/60 border-indigo-800 text-indigo-300"
-                                : "bg-slate-900 border-slate-700 text-slate-300"
+                                ? "bg-indigo-50 border-indigo-200 text-indigo-700"
+                                : "bg-slate-100 border-slate-200 text-slate-700"
                             }`}
                           >
                             {emp.role}
@@ -398,8 +398,8 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
 
                         {/* Last Login / Active */}
                         <td className="p-3.5">
-                          <div className="flex items-center gap-1.5 text-slate-300 font-medium">
-                            <Clock className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-slate-600 font-medium">
+                            <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                             <span>{formatLastActive(emp.lastLoginAt)}</span>
                           </div>
                         </td>
@@ -409,17 +409,17 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
                           <td className="p-3.5">
                             <div className="flex flex-wrap gap-1.5 max-w-md">
                               {emp.courses.length === 0 ? (
-                                <span className="text-slate-500 text-[11px]">Курсів немає</span>
+                                <span className="text-slate-400 text-[11px]">Курсів немає</span>
                               ) : (
                                 emp.courses.map((cp) => (
                                   <span
                                     key={cp.courseId}
                                     className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold border flex items-center gap-1 ${
                                       cp.isCompleted
-                                        ? "bg-emerald-950/60 border-emerald-800 text-emerald-300"
+                                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                                         : cp.completedLessons > 0
-                                        ? "bg-indigo-950/60 border-indigo-800 text-indigo-300"
-                                        : "bg-slate-900 border-slate-800 text-slate-500"
+                                        ? "bg-indigo-50 border-indigo-200 text-indigo-700"
+                                        : "bg-slate-100 border-slate-200 text-slate-600"
                                     }`}
                                     title={`${cp.courseTitle}: ${cp.completedLessons}/${cp.totalLessons} уроків (${cp.progressPercent}%)`}
                                   >
@@ -435,27 +435,27 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
                               {selectedCourseProgress ? (
                                 <div className="space-y-1">
                                   <div className="flex items-center gap-2">
-                                    <span className="font-mono text-white font-semibold">
+                                    <span className="font-mono text-slate-900 font-semibold">
                                       {selectedCourseProgress.completedLessons} /{" "}
                                       {selectedCourseProgress.totalLessons}
                                     </span>
-                                    <span className="text-[11px] text-indigo-400 font-bold">
+                                    <span className="text-[11px] text-indigo-600 font-bold">
                                       ({selectedCourseProgress.progressPercent}%)
                                     </span>
                                   </div>
-                                  <div className="w-24 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                                  <div className="w-24 h-1.5 rounded-full bg-slate-100 overflow-hidden">
                                     <div
                                       className={`h-full rounded-full ${
                                         selectedCourseProgress.isCompleted
                                           ? "bg-emerald-500"
-                                          : "bg-indigo-500"
+                                          : "bg-indigo-600"
                                       }`}
                                       style={{ width: `${selectedCourseProgress.progressPercent}%` }}
                                     />
                                   </div>
                                 </div>
                               ) : (
-                                <span className="text-slate-500">-</span>
+                                <span className="text-slate-400">-</span>
                               )}
                             </td>
 
@@ -468,15 +468,15 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
                                         <span
                                           className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                             q.attempt.passed
-                                              ? "bg-emerald-950 border border-emerald-800 text-emerald-300"
-                                              : "bg-rose-950 border border-rose-800 text-rose-300"
+                                              ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
+                                              : "bg-rose-50 border border-rose-200 text-rose-700"
                                           }`}
                                         >
                                           {q.attempt.score}%{" "}
                                           {q.attempt.passed ? "Складено" : "Не складено"}
                                         </span>
                                       ) : (
-                                        <span className="text-slate-500 text-[10px]">
+                                        <span className="text-slate-400 text-[10px]">
                                           Не проходив (Поріг: {q.passingScore}%)
                                         </span>
                                       )}
@@ -484,14 +484,14 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
                                   ))}
                                 </div>
                               ) : (
-                                <span className="text-slate-500 text-[11px]">Без тестування</span>
+                                <span className="text-slate-400 text-[11px]">Без тестування</span>
                               )}
                             </td>
                           </>
                         )}
 
                         {/* Points */}
-                        <td className="p-3.5 font-bold text-amber-400 font-mono">
+                        <td className="p-3.5 font-bold text-amber-600 font-mono">
                           ⭐ {emp.points}
                         </td>
 
@@ -499,7 +499,7 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
                         <td className="p-3.5 text-right">
                           <button
                             onClick={() => setSelectedEmployee(emp)}
-                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium transition"
+                            className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium transition"
                           >
                             Деталі →
                           </button>
@@ -516,50 +516,50 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
 
       {/* 4. DETAIL MODAL */}
       {selectedEmployee && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div>
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Users className="h-5 w-5 text-indigo-400" />
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <Users className="h-5 w-5 text-indigo-600" />
                   Індивідуальна картка працівника
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Детальна інформація про проходження курсів та результати тестувань
                 </p>
               </div>
 
               <button
                 onClick={() => setSelectedEmployee(null)}
-                className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-900 hover:bg-slate-200 transition"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             {/* Profile Overview */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
               <div>
                 <span className="text-slate-500 block text-[11px]">Працівник:</span>
-                <span className="font-semibold text-white">{selectedEmployee.name}</span>
-                <span className="text-[11px] text-slate-400 block font-mono truncate">
+                <span className="font-semibold text-slate-900">{selectedEmployee.name}</span>
+                <span className="text-[11px] text-slate-500 block font-mono truncate">
                   {selectedEmployee.email}
                 </span>
               </div>
 
               <div>
                 <span className="text-slate-500 block text-[11px]">Роль:</span>
-                <span className="font-bold text-indigo-400 uppercase">{selectedEmployee.role}</span>
+                <span className="font-bold text-indigo-600 uppercase">{selectedEmployee.role}</span>
               </div>
 
               <div>
                 <span className="text-slate-500 block text-[11px]">Баланс балів:</span>
-                <span className="font-bold text-amber-400">⭐ {selectedEmployee.points}</span>
+                <span className="font-bold text-amber-600">⭐ {selectedEmployee.points}</span>
               </div>
 
               <div>
                 <span className="text-slate-500 block text-[11px]">Останній вхід:</span>
-                <span className="text-slate-300 font-medium">
+                <span className="text-slate-700 font-medium">
                   {formatLastActive(selectedEmployee.lastLoginAt)}
                 </span>
               </div>
@@ -567,7 +567,7 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
 
             {/* Courses Breakdown */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                 Прогрес по навчальних програмах ({selectedEmployee.courses.length}):
               </h4>
 
@@ -578,16 +578,16 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
                   {selectedEmployee.courses.map((c) => (
                     <div
                       key={c.courseId}
-                      className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-3"
+                      className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200 space-y-3"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-white">{c.courseTitle}</span>
+                        <span className="text-sm font-bold text-slate-900">{c.courseTitle}</span>
                         {c.isCompleted ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 border border-emerald-800 text-emerald-300 flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center gap-1">
                             <Check className="h-3 w-3" /> Завершено
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-900 border border-slate-800 text-slate-400">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 border border-slate-200 text-slate-600">
                             {c.progressPercent}% пройдено
                           </span>
                         )}
@@ -595,18 +595,18 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
 
                       {/* Progress line */}
                       <div className="space-y-1">
-                        <div className="flex justify-between text-xs text-slate-400">
+                        <div className="flex justify-between text-xs text-slate-500">
                           <span>
                             Уроки: {c.completedLessons} з {c.totalLessons}
                           </span>
-                          <span className="font-mono text-indigo-300 font-semibold">
+                          <span className="font-mono text-indigo-600 font-semibold">
                             {c.progressPercent}%
                           </span>
                         </div>
-                        <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
                           <div
                             className={`h-full rounded-full ${
-                              c.isCompleted ? "bg-emerald-500" : "bg-indigo-500"
+                              c.isCompleted ? "bg-emerald-500" : "bg-indigo-600"
                             }`}
                             style={{ width: `${c.progressPercent}%` }}
                           />
@@ -615,28 +615,28 @@ export default function HrAnalyticsDashboard({ tenantSubdomain }: HrAnalyticsDas
 
                       {/* Quizzes breakdown */}
                       {c.quizzes.length > 0 && (
-                        <div className="pt-2 border-t border-slate-850 space-y-1.5">
-                          <span className="text-[11px] font-semibold text-slate-400 block">
+                        <div className="pt-2 border-t border-slate-200 space-y-1.5">
+                          <span className="text-[11px] font-semibold text-slate-500 block">
                             Тестування:
                           </span>
                           {c.quizzes.map((q) => (
                             <div
                               key={q.quizId}
-                              className="flex items-center justify-between text-xs bg-slate-900/60 p-2 rounded-xl"
+                              className="flex items-center justify-between text-xs bg-white border border-slate-200 p-2 rounded-xl"
                             >
-                              <span className="text-slate-300">{q.quizTitle}</span>
+                              <span className="text-slate-800">{q.quizTitle}</span>
                               {q.attempt ? (
                                 <span
                                   className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                     q.attempt.passed
-                                      ? "bg-emerald-950 border border-emerald-800 text-emerald-300"
-                                      : "bg-rose-950 border border-rose-800 text-rose-300"
+                                      ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
+                                      : "bg-rose-50 border border-rose-200 text-rose-700"
                                   }`}
                                 >
                                   {q.attempt.score}% (Поріг: {q.passingScore}%)
                                 </span>
                               ) : (
-                                <span className="text-slate-500 text-[11px]">
+                                <span className="text-slate-400 text-[11px]">
                                   Не складав (Поріг: {q.passingScore}%)
                                 </span>
                               )}

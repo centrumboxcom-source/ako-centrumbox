@@ -82,6 +82,7 @@ function HomeContent() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [resolvedTenant, setResolvedTenant] = useState<string>("");
+  const activeTenant = resolvedTenant || currentUser?.tenantSubdomain || searchParams?.get("tenant") || "rebrand";
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [lessonsList, setLessonsList] = useState<LessonItem[]>([]);

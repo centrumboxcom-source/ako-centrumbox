@@ -380,23 +380,23 @@ function AdminContent() {
 
         {/* Tab 1: COURSES SECTION */}
         {adminTab === "courses" && (
-          <div className="p-6 rounded-3xl bg-slate-900/60 border border-slate-800 shadow-2xl space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="h-7 w-7 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                  <div className="h-7 w-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
                     <BookOpen className="h-4 w-4" />
                   </div>
-                  <h2 className="text-lg font-bold text-white">Управління навчальними курсами</h2>
+                  <h2 className="text-lg font-bold text-slate-900">Управління навчальними курсами</h2>
                 </div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500">
                   Створюйте навчальні програми, редагуйте уроки через візуальний конструктор та впорядковуйте матеріали.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowNewCourseModal(true)}
-                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-600/25"
+                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center justify-center gap-2 transition shadow-sm"
               >
                 <Plus className="h-4 w-4" />
                 Створити новий курс
@@ -405,20 +405,20 @@ function AdminContent() {
 
             {/* Courses List */}
             {coursesLoading ? (
-              <div className="py-12 text-center text-slate-400 text-sm flex items-center justify-center gap-2">
-                <RefreshCw className="h-5 w-5 animate-spin text-indigo-500" />
+              <div className="py-12 text-center text-slate-500 text-sm flex items-center justify-center gap-2">
+                <RefreshCw className="h-5 w-5 animate-spin text-indigo-600" />
                 Завантаження курсів компанії...
               </div>
             ) : courses.length === 0 ? (
-              <div className="py-14 text-center border-2 border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
-                <BookOpen className="h-10 w-10 text-slate-600 mx-auto mb-3" />
-                <h3 className="text-base font-semibold text-white mb-1">У компанії ще немає створених курсів</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto mb-4">
+              <div className="py-14 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/70">
+                <BookOpen className="h-10 w-10 text-slate-400 mx-auto mb-3" />
+                <h3 className="text-base font-semibold text-slate-900 mb-1">У компанії ще немає створених курсів</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
                   Створіть свій перший курс і наповніть його інтерактивними лекціями, відео та кодом.
                 </p>
                 <button
                   onClick={() => setShowNewCourseModal(true)}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition"
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition shadow-sm"
                 >
                   + Створити курс зараз
                 </button>
@@ -428,7 +428,7 @@ function AdminContent() {
                 {courses.map((course) => (
                   <div
                     key={course.id}
-                    className="group p-5 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between shadow-lg"
+                    className="group p-5 rounded-2xl bg-slate-50/60 hover:bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-md transition flex flex-col justify-between"
                   >
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
@@ -436,8 +436,8 @@ function AdminContent() {
                           onClick={() => handleToggleCoursePublish(course)}
                           className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border flex items-center gap-1.5 transition ${
                             course.isPublished
-                              ? "bg-emerald-950/60 border-emerald-800/80 text-emerald-300 hover:bg-emerald-900/50"
-                              : "bg-amber-950/60 border-amber-800/80 text-amber-300 hover:bg-amber-900/50"
+                              ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                              : "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
                           }`}
                           title="Натисніть для зміни статусу публікації"
                         >
@@ -454,7 +454,7 @@ function AdminContent() {
 
                         <button
                           onClick={() => handleDeleteCourse(course.id, course.title)}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
                           title="Видалити курс"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -462,19 +462,19 @@ function AdminContent() {
                       </div>
 
                       <div>
-                        <h3 className="text-base font-bold text-white group-hover:text-indigo-300 transition line-clamp-1">
+                        <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition line-clamp-1">
                           {course.title}
                         </h3>
-                        <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed min-h-[32px]">
+                        <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed min-h-[32px]">
                           {course.description || "Опис курсу відсутній."}
                         </p>
                       </div>
                     </div>
 
-                    <div className="pt-4 mt-4 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                    <div className="pt-4 mt-4 border-t border-slate-150 flex items-center justify-between gap-2">
                       <Link
                         href={`/admin/courses/${course.id}/builder?tenant=${currentUser?.tenantSubdomain}`}
-                        className="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-md shadow-indigo-600/20"
+                        className="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-sm"
                       >
                         <Sparkles className="h-3.5 w-3.5" />
                         Конструктор уроків
@@ -482,7 +482,7 @@ function AdminContent() {
 
                       <Link
                         href={`/learn?tenant=${currentUser?.tenantSubdomain}&course=${course.id}`}
-                        className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition border border-slate-700"
+                        className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition border border-slate-200"
                         title="Переглянути від імені студента"
                       >
                         <ExternalLink className="h-4 w-4" />
@@ -505,79 +505,79 @@ function AdminContent() {
           <InviteManager tenantSubdomain={currentUser?.tenantSubdomain || ""} />
         )}
 
-        {/* Tab 3: MANUAL ADD & RBAC INFO */}
+        {/* Tab 4: MANUAL ADD & RBAC INFO */}
         {adminTab === "manual" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Add Employee Form */}
-            <div className="lg:col-span-6 p-6 rounded-3xl bg-slate-900/60 border border-slate-800 shadow-xl space-y-4">
+            <div className="lg:col-span-6 p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-4">
               <div className="flex items-center gap-3 mb-2">
-                <div className="h-8 w-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
                   <Users className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-white">Додати працівника вручну</h2>
-                  <p className="text-xs text-slate-400">Пряма реєстрація користувача в схемі "{currentUser?.tenantSubdomain}"</p>
+                  <h2 className="text-base font-semibold text-slate-900">Додати працівника вручну</h2>
+                  <p className="text-xs text-slate-500">Пряма реєстрація користувача в схемі "{currentUser?.tenantSubdomain}"</p>
                 </div>
               </div>
 
             <form onSubmit={handleAddEmployee} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">ПІБ Працівника</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">ПІБ Працівника</label>
                 <input
                   type="text"
                   placeholder="Олена Ковальчук"
                   value={newEmpName}
                   onChange={(e) => setNewEmpName(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Корпоративний Email</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Корпоративний Email</label>
                 <input
                   type="email"
                   placeholder="olena@company.ua"
                   value={newEmpEmail}
                   onChange={(e) => setNewEmpEmail(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Тимчасовий пароль</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Тимчасовий пароль</label>
                 <input
                   type="text"
                   value={newEmpPassword}
                   onChange={(e) => setNewEmpPassword(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white font-mono focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 font-mono focus:bg-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Призначити роль (RBAC)</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Призначити роль (RBAC)</label>
                 <select
                   value={newEmpRole}
                   onChange={(e) => setNewEmpRole(e.target.value as any)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-indigo-500"
                 >
-                  <option value="student" className="bg-slate-900 text-white">
+                  <option value="student">
                     Employee / Студент (Доступ лише до /learn)
                   </option>
-                  <option value="instructor" className="bg-slate-900 text-white">
+                  <option value="instructor">
                     Інструктор (Створення курсів)
                   </option>
-                  <option value="admin" className="bg-slate-900 text-white">
+                  <option value="admin">
                     HR / Org Admin (Повний доступ до /admin)
                   </option>
                 </select>
               </div>
 
               {empMessage && (
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-indigo-300 flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-700 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                   <span>{empMessage}</span>
                 </div>
               )}
@@ -585,7 +585,7 @@ function AdminContent() {
               <button
                 type="submit"
                 disabled={creatingEmp}
-                className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition disabled:opacity-50 shadow-md shadow-indigo-600/25"
+                className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center justify-center gap-2 transition disabled:opacity-50 shadow-sm"
               >
                 {creatingEmp ? "Збереження в схемі..." : "Зареєструвати працівника"}
               </button>
@@ -593,41 +593,41 @@ function AdminContent() {
           </div>
 
           {/* RBAC Info */}
-          <div className="lg:col-span-6 p-6 rounded-3xl bg-slate-900/60 border border-slate-800 shadow-xl space-y-4">
-            <h2 className="text-base font-semibold text-white flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-emerald-400" />
+          <div className="lg:col-span-6 p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-4">
+            <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-emerald-600" />
               Статус захисту роуту /admin (RBAC)
             </h2>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Цей маршрут захищено у <code className="text-indigo-400 font-mono">middleware.ts</code>. Якщо працівник із роллю
-              <code className="text-emerald-400 font-mono mx-1">student</code> спробує відкрити це посилання, Middleware автоматично
-              перенаправить його на <code className="text-indigo-400 font-mono">/learn</code> через брак прав.
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Цей маршрут захищено у <code className="text-indigo-600 font-mono bg-indigo-50 px-1.5 py-0.5 rounded">middleware.ts</code>. Якщо працівник із роллю
+              <code className="text-emerald-700 font-mono mx-1 bg-emerald-50 px-1.5 py-0.5 rounded">student</code> спробує відкрити це посилання, Middleware автоматично
+              перенаправить його на <code className="text-indigo-600 font-mono bg-indigo-50 px-1.5 py-0.5 rounded">/learn</code> через брак прав.
             </p>
 
-            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs space-y-2.5">
-              <div className="flex justify-between items-center py-1 border-b border-slate-850">
-                <span className="text-slate-400">Ваша активна сесія:</span>
-                <span className="text-emerald-400 font-medium font-mono">{currentUser?.email}</span>
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2.5">
+              <div className="flex justify-between items-center py-1 border-b border-slate-200">
+                <span className="text-slate-500">Ваша активна сесія:</span>
+                <span className="text-emerald-700 font-medium font-mono">{currentUser?.email}</span>
               </div>
-              <div className="flex justify-between items-center py-1 border-b border-slate-850">
-                <span className="text-slate-400">Роль:</span>
-                <span className="glow-badge-indigo text-[11px] px-2.5 py-0.5 rounded-full font-bold">
+              <div className="flex justify-between items-center py-1 border-b border-slate-200">
+                <span className="text-slate-500">Роль:</span>
+                <span className="bg-indigo-100 text-indigo-700 text-[11px] px-2.5 py-0.5 rounded-full font-bold">
                   {currentUser?.role.toUpperCase()}
                 </span>
               </div>
               <div className="flex justify-between items-center py-1">
-                <span className="text-slate-400">Дозволені ролі для /admin:</span>
-                <span className="text-slate-200 font-mono text-[11px]">["admin"]</span>
+                <span className="text-slate-500">Дозволені ролі для /admin:</span>
+                <span className="text-slate-700 font-mono text-[11px]">["admin"]</span>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-800 flex justify-between items-center text-xs">
-              <Link href="/" className="text-indigo-400 hover:text-indigo-300 font-medium">
+            <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs">
+              <Link href="/" className="text-indigo-600 hover:text-indigo-700 font-medium">
                 ← До головного дашборду
               </Link>
               <button
                 onClick={handleLogout}
-                className="text-red-400 hover:text-red-300 font-medium"
+                className="text-rose-600 hover:text-rose-700 font-medium"
               >
                 Вийти із системи
               </button>
@@ -738,7 +738,7 @@ function AdminContent() {
 
 export default function AdminPage() {
   return (
-    <Suspense fallback={<div className="text-white p-8">Завантаження панелі адміністратора...</div>}>
+    <Suspense fallback={<div className="text-slate-500 p-8">Завантаження панелі адміністратора...</div>}>
       <AdminContent />
     </Suspense>
   );

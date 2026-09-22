@@ -392,13 +392,13 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
   return (
     <div className="space-y-6">
       {/* Navigation Sub-Tabs */}
-      <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-slate-900/80 border border-slate-800">
+      <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-slate-100 border border-slate-200">
         <button
           onClick={() => setActiveTab("generator")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
             activeTab === "generator"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
-              : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
           }`}
         >
           <Link2 className="h-4 w-4" />
@@ -407,10 +407,10 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
 
         <button
           onClick={() => setActiveTab("csv")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
             activeTab === "csv"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
-              : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
           }`}
         >
           <FileSpreadsheet className="h-4 w-4" />
@@ -419,10 +419,10 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
 
         <button
           onClick={() => setActiveTab("invites")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
             activeTab === "invites"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
-              : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
           }`}
         >
           <Clock className="h-4 w-4" />
@@ -431,10 +431,10 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
 
         <button
           onClick={() => setActiveTab("employees")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
             activeTab === "employees"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
-              : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
           }`}
         >
           <Users className="h-4 w-4" />
@@ -445,27 +445,27 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
       {/* TAB 1: INVITE GENERATOR */}
       {activeTab === "generator" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-6 p-6 rounded-3xl bg-slate-900/60 border border-slate-800 shadow-xl space-y-5">
+          <div className="lg:col-span-6 p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-5">
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Link2 className="h-4 w-4 text-indigo-400" />
+              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <Link2 className="h-4 w-4 text-indigo-600" />
                 Створення посилання-запрошення
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Згенеруйте унікальне посилання з токеном, яке дозволить співробітнику самостійно зареєструватися.
               </p>
             </div>
 
             <form onSubmit={handleGenerateInvite} className="space-y-4">
               {/* Type Switcher */}
-              <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+              <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-slate-100 border border-slate-200 text-xs">
                 <button
                   type="button"
                   onClick={() => setInviteType("targeted")}
-                  className={`py-2 px-3 rounded-lg font-medium transition ${
+                  className={`py-2 px-3 rounded-lg font-bold transition ${
                     inviteType === "targeted"
-                      ? "bg-indigo-600 text-white shadow"
-                      : "text-slate-400 hover:text-white"
+                      ? "bg-indigo-600 text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Індивідуальне (для Email)
@@ -473,10 +473,10 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                 <button
                   type="button"
                   onClick={() => setInviteType("team")}
-                  className={`py-2 px-3 rounded-lg font-medium transition ${
+                  className={`py-2 px-3 rounded-lg font-bold transition ${
                     inviteType === "team"
-                      ? "bg-indigo-600 text-white shadow"
-                      : "text-slate-400 hover:text-white"
+                      ? "bg-indigo-600 text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Командне (Team Link)
@@ -485,7 +485,7 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
 
               {inviteType === "targeted" ? (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Корпоративний Email співробітника *
                   </label>
                   <input
@@ -494,15 +494,15 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                     placeholder="ivan.shevchenko@company.ua"
                     value={targetEmail}
                     onChange={(e) => setTargetEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-indigo-600 transition"
                   />
-                  <span className="text-[11px] text-slate-500 mt-1 block">
+                  <span className="text-[11px] text-slate-400 mt-1 block">
                     Одноразове посилання, закріплене за цією конкретною адресою.
                   </span>
                 </div>
               ) : (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Максимальна кількість реєстрацій за цим посиланням
                   </label>
                   <input
@@ -511,9 +511,9 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                     max={1000}
                     value={maxUses}
                     onChange={(e) => setMaxUses(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-900 focus:bg-white focus:outline-none focus:border-indigo-600 transition"
                   />
-                  <span className="text-[11px] text-slate-500 mt-1 block">
+                  <span className="text-[11px] text-slate-400 mt-1 block">
                     Дозволяє зареєструватися команді до {maxUses} працівників за одним посиланням (наприклад, у Slack-чаті).
                   </span>
                 </div>
@@ -521,13 +521,13 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Термін придатності
                   </label>
                   <select
                     value={expiresInHours}
                     onChange={(e) => setExpiresInHours(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-indigo-600 transition"
                   >
                     <option value={24}>24 години (1 доба)</option>
                     <option value={48}>48 годин (2 доби - рекомендовано)</option>
@@ -537,13 +537,13 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Призначена роль
                   </label>
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value as any)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-indigo-600 transition"
                   >
                     <option value="student">Студент / Працівник</option>
                     <option value="instructor">Інструктор</option>
@@ -553,8 +553,8 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
               </div>
 
               {genError && (
-                <div className="p-3 rounded-xl bg-rose-950/50 border border-rose-800 text-xs text-rose-300 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-rose-500 shrink-0" />
                   <span>{genError}</span>
                 </div>
               )}
@@ -562,7 +562,7 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
               <button
                 type="submit"
                 disabled={generating}
-                className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition disabled:opacity-50 shadow-md shadow-indigo-600/25"
+                className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition disabled:opacity-50 shadow-md shadow-indigo-600/20"
               >
                 {generating ? (
                   <>
@@ -580,17 +580,17 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
           </div>
 
           {/* Result preview column */}
-          <div className="lg:col-span-6 p-6 rounded-3xl bg-slate-900/60 border border-slate-800 shadow-xl flex flex-col justify-between space-y-4">
+          <div className="lg:col-span-6 p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-4">
             <div className="space-y-4">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-emerald-400" />
+              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-emerald-600" />
                 Готове посилання для запрошення
               </h3>
 
               {generatedLink ? (
-                <div className="p-5 rounded-2xl bg-indigo-950/30 border border-indigo-500/40 space-y-3">
-                  <span className="text-xs text-indigo-300 font-semibold flex items-center gap-1.5">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                <div className="p-5 rounded-2xl bg-indigo-50/70 border-2 border-indigo-200 space-y-3">
+                  <span className="text-xs text-indigo-900 font-bold flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                     Посилання успішно створено та готове до надсилання!
                   </span>
 
@@ -599,14 +599,14 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                       type="text"
                       readOnly
                       value={generatedLink}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-indigo-200 font-mono select-all focus:outline-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-indigo-200 text-xs text-indigo-950 font-mono select-all focus:outline-none"
                     />
                     <button
                       onClick={() => copyToClipboard(generatedLink, true)}
-                      className={`px-4 py-2.5 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition ${
+                      className={`px-4 py-2.5 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition shadow-xs ${
                         copiedLink
                           ? "bg-emerald-600 text-white"
-                          : "bg-indigo-600 hover:bg-indigo-500 text-white"
+                          : "bg-indigo-600 hover:bg-indigo-700 text-white"
                       }`}
                     >
                       {copiedLink ? (
@@ -623,23 +623,23 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                     </button>
                   </div>
 
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
                     Надішліть це посилання співробітнику в Slack, Teams або на пошту. Під час переходу він введе ім'я та пароль і автоматично буде доданий до вашого навчального простору.
                   </p>
                 </div>
               ) : (
-                <div className="py-12 text-center border-2 border-dashed border-slate-800 rounded-2xl bg-slate-950/40 space-y-2">
-                  <Link2 className="h-8 w-8 text-slate-600 mx-auto" />
-                  <p className="text-xs text-slate-400">
+                <div className="py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 space-y-2">
+                  <Link2 className="h-8 w-8 text-slate-400 mx-auto" />
+                  <p className="text-xs text-slate-500">
                     Заповніть форму ліворуч і натисніть «Згенерувати», щоб отримати готове безпечне посилання.
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-slate-400 space-y-2">
-              <span className="text-slate-300 font-semibold block">Як це працює:</span>
-              <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-400">
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-2">
+              <span className="text-slate-900 font-bold block">Як це працює:</span>
+              <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-600">
                 <li>Токен формується за допомогою 256-бітної криптографічної випадковості.</li>
                 <li>Автоматично деактивується через вказаний термін (24–48 годин).</li>
                 <li>Працівник реєструється безпосередньо в базу даних вашої компанії (PostgreSQL schema).</li>
@@ -651,23 +651,23 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
 
       {/* TAB 2: CSV BULK IMPORT */}
       {activeTab === "csv" && (
-        <div className="p-6 rounded-3xl bg-slate-900/60 border border-slate-800 shadow-xl space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <FileSpreadsheet className="h-4 w-4 text-emerald-400" />
+              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
                 Масовий Onboarding через CSV (для 100+ працівників)
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Завантажте файл таблиці або вставте список співробітників для пакетної реєстрації або генерації інвайтів.
               </p>
             </div>
 
             <button
               onClick={handleDownloadSampleCsv}
-              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-700 shrink-0"
+              className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-200 shrink-0"
             >
-              <Download className="h-3.5 w-3.5 text-indigo-400" />
+              <Download className="h-3.5 w-3.5 text-indigo-600" />
               Завантажити зразок шаблону (.csv)
             </button>
           </div>
@@ -676,24 +676,24 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
             {/* Input area */}
             <div className="lg:col-span-5 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Завантажити файл .CSV
                 </label>
-                <div className="border-2 border-dashed border-slate-800 hover:border-indigo-500/50 rounded-2xl p-4 text-center bg-slate-950 transition cursor-pointer relative">
+                <div className="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-4 text-center bg-slate-50/60 transition cursor-pointer relative">
                   <input
                     type="file"
                     accept=".csv,.txt"
                     onChange={handleFileUpload}
                     className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                   />
-                  <Upload className="h-6 w-6 text-indigo-400 mx-auto mb-1.5" />
-                  <p className="text-xs text-slate-300 font-medium">Перетягніть CSV файл або натисніть для вибору</p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">Колонки: ПІБ, Email, Роль</p>
+                  <Upload className="h-6 w-6 text-indigo-600 mx-auto mb-1.5" />
+                  <p className="text-xs text-slate-800 font-bold">Перетягніть CSV файл або натисніть для вибору</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Колонки: ПІБ, Email, Роль</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Або вставте текст таблиці безпосередньо:
                 </label>
                 <textarea
@@ -701,41 +701,41 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                   value={csvText}
                   onChange={(e) => parseCsvContent(e.target.value)}
                   placeholder="Олена Ковальчук, olena@company.ua, student&#10;Іван Мельник, ivan@company.ua, instructor"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white font-mono placeholder-slate-600 focus:outline-none focus:border-indigo-500 resize-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 font-mono placeholder-slate-400 focus:bg-white focus:outline-none focus:border-indigo-600 resize-none transition"
                 />
               </div>
 
               {/* Mode Selection */}
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-                <span className="text-xs font-semibold text-slate-300 block">Оберіть спосіб підключення:</span>
-                <div className="space-y-2 text-xs">
-                  <label className="flex items-start gap-2 cursor-pointer">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                <span className="text-xs font-bold text-slate-900 block">Оберіть спосіб підключення:</span>
+                <div className="space-y-2.5 text-xs">
+                  <label className="flex items-start gap-2.5 cursor-pointer">
                     <input
                       type="radio"
                       name="bulkMode"
                       checked={csvImportMode === "links"}
                       onChange={() => setCsvImportMode("links")}
-                      className="mt-0.5 text-indigo-600"
+                      className="mt-0.5 text-indigo-600 focus:ring-0"
                     />
                     <div>
-                      <span className="font-semibold text-slate-200">Масова генерація інвайтів (Рекомендовано)</span>
-                      <p className="text-[11px] text-slate-400">
+                      <span className="font-bold text-slate-900 block">Масова генерація інвайтів (Рекомендовано)</span>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
                         Створює унікальні посилання на 48 год для кожного працівника. Ви отримаєте таблицю посилань для розсилки.
                       </p>
                     </div>
                   </label>
 
-                  <label className="flex items-start gap-2 cursor-pointer">
+                  <label className="flex items-start gap-2.5 cursor-pointer">
                     <input
                       type="radio"
                       name="bulkMode"
                       checked={csvImportMode === "direct"}
                       onChange={() => setCsvImportMode("direct")}
-                      className="mt-0.5 text-indigo-600"
+                      className="mt-0.5 text-indigo-600 focus:ring-0"
                     />
                     <div>
-                      <span className="font-semibold text-slate-200">Пряме створення акаунтів (Direct Provisioning)</span>
-                      <p className="text-[11px] text-slate-400">
+                      <span className="font-bold text-slate-900 block">Пряме створення акаунтів (Direct Provisioning)</span>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
                         Миттєво додає користувачів до бази з автоматично згенерованими надійними паролями.
                       </p>
                     </div>
@@ -747,7 +747,7 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                 type="button"
                 disabled={importing || parsedRows.filter((r) => r.isValid).length === 0}
                 onClick={handleRunBulkImport}
-                className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition disabled:opacity-50 shadow-lg shadow-indigo-600/30"
+                className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition disabled:opacity-50 shadow-md shadow-indigo-600/20"
               >
                 {importing ? (
                   <>
@@ -766,13 +766,13 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
             {/* Preview table */}
             <div className="lg:col-span-7 space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold text-slate-300">
+                <h4 className="text-xs font-bold text-slate-800">
                   Попередній перегляд списку ({parsedRows.length} рядків)
                 </h4>
                 {bulkResults && (
                   <button
                     onClick={handleExportResultsCsv}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800 text-emerald-300 hover:bg-emerald-900/60 text-xs font-semibold flex items-center gap-1.5 transition"
+                    className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-xs font-bold flex items-center gap-1.5 transition"
                   >
                     <Download className="h-3.5 w-3.5" />
                     Експортувати результати (.csv)
@@ -781,17 +781,17 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
               </div>
 
               {bulkSummaryMessage && (
-                <div className="p-3 rounded-xl bg-emerald-950/50 border border-emerald-800 text-xs text-emerald-300 flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                  <span>{bulkSummaryMessage}</span>
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span className="font-medium">{bulkSummaryMessage}</span>
                 </div>
               )}
 
               {/* Table or Results */}
               {bulkResults ? (
-                <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-950 max-h-[380px] overflow-y-auto">
+                <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white max-h-[380px] overflow-y-auto shadow-xs">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 font-semibold sticky top-0">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold sticky top-0">
                       <tr>
                         <th className="p-3">ПІБ</th>
                         <th className="p-3">Email</th>
@@ -801,24 +801,28 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-850">
+                    <tbody className="divide-y divide-slate-100">
                       {bulkResults.map((res, idx) => (
-                        <tr key={idx} className="hover:bg-slate-900/40 transition">
-                          <td className="p-3 font-medium text-white">{res.name}</td>
-                          <td className="p-3 font-mono text-slate-300">{res.email}</td>
-                          <td className="p-3 text-indigo-400 font-semibold">{res.role}</td>
+                        <tr key={idx} className="hover:bg-slate-50/70 transition">
+                          <td className="p-3 font-bold text-slate-900">{res.name}</td>
+                          <td className="p-3 font-mono text-slate-600">{res.email}</td>
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 rounded-full text-[11px] bg-indigo-50 border border-indigo-200 text-indigo-700 font-semibold">
+                              {res.role}
+                            </span>
+                          </td>
                           <td className="p-3">
                             {csvImportMode === "links" ? (
                               <button
                                 onClick={() => copyToClipboard(res.inviteUrl || "")}
-                                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-mono flex items-center gap-1 transition"
+                                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-indigo-600 text-[11px] font-mono flex items-center gap-1 transition font-bold"
                                 title="Скопіювати посилання"
                               >
                                 <Copy className="h-3 w-3" />
                                 Копіювати лінк
                               </button>
                             ) : (
-                              <span className="font-mono text-emerald-400 font-bold">
+                              <span className="font-mono text-emerald-600 font-bold">
                                 {res.password}
                               </span>
                             )}
@@ -829,9 +833,9 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                   </table>
                 </div>
               ) : parsedRows.length > 0 ? (
-                <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-950 max-h-[380px] overflow-y-auto">
+                <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white max-h-[380px] overflow-y-auto shadow-xs">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 font-semibold sticky top-0">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold sticky top-0">
                       <tr>
                         <th className="p-3">#</th>
                         <th className="p-3">ПІБ</th>
@@ -840,24 +844,24 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                         <th className="p-3">Статус</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-850">
+                    <tbody className="divide-y divide-slate-100">
                       {parsedRows.map((row, idx) => (
-                        <tr key={idx} className="hover:bg-slate-900/40 transition">
-                          <td className="p-3 text-slate-500 font-mono">{idx + 1}</td>
-                          <td className="p-3 font-medium text-white">{row.name}</td>
-                          <td className="p-3 font-mono text-slate-300">{row.email}</td>
+                        <tr key={idx} className="hover:bg-slate-50/70 transition">
+                          <td className="p-3 text-slate-400 font-mono">{idx + 1}</td>
+                          <td className="p-3 font-bold text-slate-900">{row.name}</td>
+                          <td className="p-3 font-mono text-slate-600">{row.email}</td>
                           <td className="p-3">
-                            <span className="px-2 py-0.5 rounded-full text-[11px] bg-indigo-950/60 border border-indigo-800/80 text-indigo-300 font-semibold">
+                            <span className="px-2 py-0.5 rounded-full text-[11px] bg-indigo-50 border border-indigo-200 text-indigo-700 font-semibold">
                               {row.role}
                             </span>
                           </td>
                           <td className="p-3">
                             {row.isValid ? (
-                              <span className="text-emerald-400 flex items-center gap-1 font-semibold text-[11px]">
+                              <span className="text-emerald-600 flex items-center gap-1 font-bold text-[11px]">
                                 <CheckCircle2 className="h-3.5 w-3.5" /> Валідно
                               </span>
                             ) : (
-                              <span className="text-rose-400 flex items-center gap-1 text-[11px]">
+                              <span className="text-rose-600 flex items-center gap-1 text-[11px] font-semibold">
                                 <AlertCircle className="h-3.5 w-3.5" /> {row.error}
                               </span>
                             )}
@@ -868,9 +872,9 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                   </table>
                 </div>
               ) : (
-                <div className="py-16 text-center border-2 border-dashed border-slate-800 rounded-2xl bg-slate-950/40 space-y-2">
-                  <FileText className="h-8 w-8 text-slate-600 mx-auto" />
-                  <p className="text-xs text-slate-400">
+                <div className="py-16 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 space-y-2">
+                  <FileText className="h-8 w-8 text-slate-400 mx-auto" />
+                  <p className="text-xs text-slate-500">
                     Завантажте CSV або вставте список для попереднього перегляду.
                   </p>
                 </div>
@@ -882,21 +886,21 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
 
       {/* TAB 3: ACTIVE & USED INVITES */}
       {activeTab === "invites" && (
-        <div className="p-6 rounded-3xl bg-slate-900/60 border border-slate-800 shadow-xl space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-5">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Clock className="h-4 w-4 text-amber-400" />
+              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <Clock className="h-4 w-4 text-amber-500" />
                 Історія та статус запрошень
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Керуйте згенерованими посиланнями для компанії {tenantSubdomain}.
               </p>
             </div>
 
             <button
               onClick={loadInvites}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition"
               title="Оновити список"
             >
               <RefreshCw className={`h-4 w-4 ${invitesLoading ? "animate-spin" : ""}`} />
@@ -904,19 +908,19 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
           </div>
 
           {invitesLoading ? (
-            <div className="py-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-              <RefreshCw className="h-4 w-4 animate-spin text-indigo-500" />
+            <div className="py-12 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+              <RefreshCw className="h-4 w-4 animate-spin text-indigo-600" />
               Завантаження запрошень...
             </div>
           ) : invites.length === 0 ? (
-            <div className="py-12 text-center border-2 border-dashed border-slate-800 rounded-2xl bg-slate-950/40 space-y-2">
-              <Link2 className="h-8 w-8 text-slate-600 mx-auto" />
-              <p className="text-xs text-slate-400">Ще не згенеровано жодного запрошення.</p>
+            <div className="py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 space-y-2">
+              <Link2 className="h-8 w-8 text-slate-400 mx-auto" />
+              <p className="text-xs text-slate-500">Ще не згенеровано жодного запрошення.</p>
             </div>
           ) : (
-            <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-950">
+            <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-xs">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 font-semibold">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
                   <tr>
                     <th className="p-3">Ціль / Тип</th>
                     <th className="p-3">Роль</th>
@@ -926,7 +930,7 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                     <th className="p-3 text-right">Дії</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-850">
+                <tbody className="divide-y divide-slate-100">
                   {invites.map((inv) => {
                     const isExpired = new Date() > new Date(inv.expiresAt);
                     const isExhausted = inv.usesCount >= inv.maxUses;
@@ -937,21 +941,21 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                     const fullLink = `${origin}/invite/${inv.token}?tenant=${inv.tenantSubdomain}`;
 
                     return (
-                      <tr key={inv.id} className="hover:bg-slate-900/40 transition">
+                      <tr key={inv.id} className="hover:bg-slate-50/70 transition">
                         <td className="p-3">
                           {inv.email ? (
-                            <span className="font-mono text-white font-medium">{inv.email}</span>
+                            <span className="font-mono text-slate-900 font-bold">{inv.email}</span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-full text-[11px] bg-indigo-950 text-indigo-300 border border-indigo-800 font-semibold">
+                            <span className="px-2 py-0.5 rounded-full text-[11px] bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
                               Командне посилання
                             </span>
                           )}
                         </td>
-                        <td className="p-3 font-semibold text-slate-300 capitalize">{inv.role}</td>
-                        <td className="p-3 font-mono text-slate-400">
+                        <td className="p-3 font-semibold text-slate-700 capitalize">{inv.role}</td>
+                        <td className="p-3 font-mono text-slate-600 font-semibold">
                           {inv.usesCount} / {inv.maxUses}
                         </td>
-                        <td className="p-3 text-slate-400">
+                        <td className="p-3 text-slate-500">
                           {new Date(inv.expiresAt).toLocaleString("uk-UA", {
                             day: "numeric",
                             month: "short",
@@ -961,13 +965,13 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                         </td>
                         <td className="p-3">
                           {isRevoked ? (
-                            <span className="text-rose-400 text-[11px] font-semibold">🚫 Відкликано</span>
+                            <span className="text-rose-600 text-[11px] font-bold">🚫 Відкликано</span>
                           ) : isExhausted ? (
-                            <span className="text-amber-400 text-[11px] font-semibold">⏳ Використано</span>
+                            <span className="text-amber-600 text-[11px] font-bold">⏳ Використано</span>
                           ) : isExpired ? (
-                            <span className="text-rose-400 text-[11px] font-semibold">🔴 Прострочено</span>
+                            <span className="text-rose-600 text-[11px] font-bold">🔴 Прострочено</span>
                           ) : (
-                            <span className="text-emerald-400 text-[11px] font-semibold">🟢 Активне</span>
+                            <span className="text-emerald-600 text-[11px] font-bold">🟢 Активне</span>
                           )}
                         </td>
                         <td className="p-3 text-right">
@@ -975,11 +979,11 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                             {isActive && (
                               <button
                                 onClick={() => copyToClipboard(fullLink, false, inv.id)}
-                                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white transition"
+                                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-indigo-600 transition"
                                 title="Скопіювати посилання"
                               >
                                 {copiedInviteId === inv.id ? (
-                                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                                  <Check className="h-3.5 w-3.5 text-emerald-600" />
                                 ) : (
                                   <Copy className="h-3.5 w-3.5" />
                                 )}
@@ -989,7 +993,7 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                             {!isRevoked && (
                               <button
                                 onClick={() => handleRevokeInvite(inv.id)}
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
                                 title="Відкликати запрошення"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -1009,14 +1013,14 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
 
       {/* TAB 4: CURRENT EMPLOYEES */}
       {activeTab === "employees" && (
-        <div className="p-6 rounded-3xl bg-slate-900/60 border border-slate-800 shadow-xl space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-800">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-100">
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Users className="h-4 w-4 text-indigo-400" />
+              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <Users className="h-4 w-4 text-indigo-600" />
                 Зареєстровані працівники компанії
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Список користувачів в ізольованій схемі бази даних "{tenantSubdomain}".
               </p>
             </div>
@@ -1028,14 +1032,14 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                   placeholder="Пошук за ім'ям або email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-56"
+                  className="pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-indigo-600 w-56 transition"
                 />
-                <Search className="h-3.5 w-3.5 text-slate-500 absolute left-2.5 top-2" />
+                <Search className="h-3.5 w-3.5 text-slate-400 absolute left-2.5 top-2" />
               </div>
 
               <button
                 onClick={loadEmployees}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
+                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition"
                 title="Оновити список"
               >
                 <RefreshCw className={`h-4 w-4 ${empLoading ? "animate-spin" : ""}`} />
@@ -1044,19 +1048,19 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
           </div>
 
           {empLoading ? (
-            <div className="py-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-              <RefreshCw className="h-4 w-4 animate-spin text-indigo-500" />
+            <div className="py-12 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+              <RefreshCw className="h-4 w-4 animate-spin text-indigo-600" />
               Завантаження працівників...
             </div>
           ) : filteredEmployees.length === 0 ? (
-            <div className="py-12 text-center border-2 border-dashed border-slate-800 rounded-2xl bg-slate-950/40 space-y-2">
-              <Users className="h-8 w-8 text-slate-600 mx-auto" />
-              <p className="text-xs text-slate-400">Співробітників не знайдено.</p>
+            <div className="py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 space-y-2">
+              <Users className="h-8 w-8 text-slate-400 mx-auto" />
+              <p className="text-xs text-slate-500">Співробітників не знайдено.</p>
             </div>
           ) : (
-            <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-950">
+            <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-xs">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 font-semibold">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
                   <tr>
                     <th className="p-3">ПІБ</th>
                     <th className="p-3">Корпоративний Email</th>
@@ -1065,30 +1069,30 @@ export default function InviteManager({ tenantSubdomain }: InviteManagerProps) {
                     <th className="p-3">Дата реєстрації</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-850">
+                <tbody className="divide-y divide-slate-100">
                   {filteredEmployees.map((emp) => (
-                    <tr key={emp.id} className="hover:bg-slate-900/40 transition">
-                      <td className="p-3 font-semibold text-white">{emp.name}</td>
-                      <td className="p-3 font-mono text-slate-300">{emp.email}</td>
+                    <tr key={emp.id} className="hover:bg-slate-50/70 transition">
+                      <td className="p-3 font-bold text-slate-900">{emp.name}</td>
+                      <td className="p-3 font-mono text-slate-600">{emp.email}</td>
                       <td className="p-3">
                         <span
-                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
                             emp.role === "admin"
-                              ? "bg-purple-950/60 border-purple-800 text-purple-300"
+                              ? "bg-indigo-50 border-indigo-200 text-indigo-700"
                               : emp.role === "instructor"
-                              ? "bg-indigo-950/60 border-indigo-800 text-indigo-300"
-                              : "bg-slate-900 border-slate-700 text-slate-300"
+                              ? "bg-purple-50 border-purple-200 text-purple-700"
+                              : "bg-slate-100 border-slate-200 text-slate-700"
                           }`}
                         >
                           {emp.role.toUpperCase()}
                         </span>
                       </td>
                       <td className="p-3">
-                        <span className="font-bold text-amber-400 flex items-center gap-1">
+                        <span className="font-bold text-amber-800 font-mono flex items-center gap-1">
                           ⭐ {emp.points}
                         </span>
                       </td>
-                      <td className="p-3 text-slate-400">
+                      <td className="p-3 text-slate-500">
                         {new Date(emp.createdAt).toLocaleDateString("uk-UA")}
                       </td>
                     </tr>
