@@ -23,6 +23,9 @@ import {
   Users,
   BookOpen,
   Box,
+  Copy,
+  KeyRound,
+  Check,
 } from "lucide-react";
 import { SpotifyShell } from "@/components/navigation/SpotifyShell";
 
@@ -47,10 +50,18 @@ function SuperadminContent() {
   const [newTenantName, setNewTenantName] = useState("");
   const [newSubdomain, setNewSubdomain] = useState("");
   const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [copiedCredentials, setCopiedCredentials] = useState(false);
   const [provisioning, setProvisioning] = useState(false);
   const [provisionResult, setProvisionResult] = useState<{
     success: boolean;
     message: string;
+    initialAdmin?: {
+      email: string;
+      password?: string;
+      subdomain: string;
+      role: string;
+    } | null;
   } | null>(null);
 
   // Check auth session
@@ -111,6 +122,7 @@ function SuperadminContent() {
           name: newTenantName.trim(),
           subdomain: newSubdomain.trim().toLowerCase(),
           adminEmail: newAdminEmail.trim() || undefined,
+          adminPassword: newAdminPassword.trim() || undefined,
         }),
       });
 
@@ -119,10 +131,12 @@ function SuperadminContent() {
         setProvisionResult({
           success: true,
           message: `Організацію "${newTenantName}" успішно створено! Клієнтську схему "${newSubdomain.toLowerCase()}" розгорнуто в Neon PostgreSQL.`,
+          initialAdmin: data.initialAdmin || null,
         });
         setNewTenantName("");
         setNewSubdomain("");
         setNewAdminEmail("");
+        setNewAdminPassword("");
         loadTenants();
       } else {
         setProvisionResult({
@@ -322,23 +336,95 @@ function SuperadminContent() {
           </div>
 
           {provisionResult && (
-            <div
-              className={`p-4 rounded-2xl text-xs flex items-center gap-3 ${
-                provisionResult.success
-                  ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
-                  : "bg-rose-50 border border-rose-200 text-rose-800"
-              }`}
-            >
-              {provisionResult.success ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-              ) : (
-                <AlertCircle className="h-5 w-5 text-rose-600 shrink-0" />
+            <div className="space-y-4">
+              <div
+                className={`p-4 rounded-2xl text-xs flex items-center gap-3 ${
+                  provisionResult.success
+                    ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+                    : "bg-rose-50 border border-rose-200 text-rose-800"
+                }`}
+              >
+                {provisionResult.success ? (
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-rose-600 shrink-0" />
+                )}
+                <span className="font-medium leading-relaxed">{provisionResult.message}</span>
+              </div>
+
+              {/* Copyable Credentials Card for newly created HR Admin */}
+              {provisionResult.initialAdmin && (
+                <div className="p-5 rounded-2xl bg-indigo-50/80 border-2 border-indigo-200/90 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-7 w-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                        <KeyRound className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-indigo-950 uppercase tracking-wider">
+                          Реквізити доступу для нового HR-Адміністратора
+                        </h4>
+                        <p className="text-[11px] text-indigo-700">
+                          Скопіюйте ці дані та передайте відповідальному співробітнику компанії:
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+                        const loginUrl = `${origin}/login?tenant=${provisionResult.initialAdmin?.subdomain}`;
+                        const text = `Вітаємо у системі корпоративного навчання CENTRUMBOX AKO!\n\nОрганізація: ${provisionResult.initialAdmin?.subdomain}\nEmail для входу: ${provisionResult.initialAdmin?.email}\nПароль: ${provisionResult.initialAdmin?.password}\nПосилання для авторизації: ${loginUrl}\n\n(Після входу ви зможете керувати співробітниками, курсами та тестами в HR Студії)`;
+                        navigator.clipboard.writeText(text);
+                        setCopiedCredentials(true);
+                        setTimeout(() => setCopiedCredentials(false), 3000);
+                      }}
+                      className="px-3.5 py-2 rounded-xl bg-white hover:bg-indigo-50 border border-indigo-300 text-indigo-700 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition"
+                    >
+                      {copiedCredentials ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 text-emerald-600" />
+                          <span className="text-emerald-700 font-bold">Скопійовано! ✓</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5 text-indigo-600" />
+                          <span>Скопіювати реквізити для відправки</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                    <div className="p-3 rounded-xl bg-white border border-indigo-100/90 shadow-xs">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Email HR-а:</span>
+                      <span className="font-mono text-xs font-bold text-slate-900 break-all select-all">
+                        {provisionResult.initialAdmin.email}
+                      </span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white border border-indigo-100/90 shadow-xs">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Тимчасовий пароль:</span>
+                      <span className="font-mono text-xs font-bold text-indigo-600 select-all">
+                        {provisionResult.initialAdmin.password}
+                      </span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white border border-indigo-100/90 shadow-xs">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Посилання для входу:</span>
+                      <span className="font-mono text-[11px] text-slate-600 truncate block select-all">
+                        /login?tenant={provisionResult.initialAdmin.subdomain}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-indigo-100/50 text-[11px] text-indigo-900 leading-relaxed">
+                    💡 <strong>Як співробітнику зайти:</strong> HR переходить на сторінку входу, вводить свій <strong>email</strong> та пароль <strong>{provisionResult.initialAdmin.password}</strong>. Платформа автоматично ідентифікує його компанію і надасть повний доступ до HR Студії & Конструктора курсів.
+                  </div>
+                </div>
               )}
-              <span className="font-medium leading-relaxed">{provisionResult.message}</span>
             </div>
           )}
 
-          <form onSubmit={handleProvisionTenant} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <form onSubmit={handleProvisionTenant} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Назва компанії *
@@ -359,7 +445,7 @@ function SuperadminContent() {
                     );
                   }
                 }}
-                className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 outline-none focus:bg-white focus:border-indigo-600"
+                className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 outline-none focus:bg-white focus:border-indigo-600 transition"
               />
             </div>
 
@@ -373,7 +459,7 @@ function SuperadminContent() {
                 placeholder="наприклад: monobank"
                 value={newSubdomain}
                 onChange={(e) => setNewSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
-                className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-900 placeholder-slate-400 outline-none focus:bg-white focus:border-indigo-600"
+                className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-900 placeholder-slate-400 outline-none focus:bg-white focus:border-indigo-600 transition"
               />
             </div>
 
@@ -386,15 +472,32 @@ function SuperadminContent() {
                 placeholder="admin@monobank.com"
                 value={newAdminEmail}
                 onChange={(e) => setNewAdminEmail(e.target.value)}
-                className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 outline-none focus:bg-white focus:border-indigo-600"
+                className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 outline-none focus:bg-white focus:border-indigo-600 transition"
               />
             </div>
 
-            <div className="sm:col-span-3 pt-2 flex items-center justify-end">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                <span>Пароль HR-Адміна</span>
+                <span className="text-[10px] text-slate-400 font-normal">дефолт: admin123</span>
+              </label>
+              <input
+                type="text"
+                placeholder="admin123"
+                value={newAdminPassword}
+                onChange={(e) => setNewAdminPassword(e.target.value)}
+                className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 outline-none focus:bg-white focus:border-indigo-600 transition"
+              />
+            </div>
+
+            <div className="sm:col-span-2 lg:col-span-4 pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <span className="text-[11px] text-slate-400">
+                🔒 Для кожної компанії створюється окрема ізольована схема PostgreSQL в Neon.
+              </span>
               <button
                 type="submit"
                 disabled={provisioning || !newTenantName.trim() || !newSubdomain.trim()}
-                className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition flex items-center gap-2 disabled:opacity-50"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {provisioning ? (
                   <>

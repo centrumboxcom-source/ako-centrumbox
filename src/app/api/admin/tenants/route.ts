@@ -13,6 +13,7 @@ const createTenantSchema = z.object({
   subdomain: z.string().min(3, "Сабдомен повинен містити мінімум 3 символи").max(63),
   adminEmail: z.union([z.string().email("Введіть коректну адресу електронної пошти"), z.literal("")]).optional(),
   adminName: z.string().min(2).optional(),
+  adminPassword: z.union([z.string().min(6, "Пароль повинен містити щонайменше 6 символів"), z.literal("")]).optional(),
 });
 
 export async function GET() {
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, subdomain, adminEmail, adminName } = parsed.data;
+    const { name, subdomain, adminEmail, adminName, adminPassword } = parsed.data;
     const validation = validateSubdomainFormat(subdomain);
     if (!validation.valid) {
       return NextResponse.json(
@@ -96,8 +97,11 @@ export async function POST(request: NextRequest) {
     const migrationResult = await migrateTenantSchema(safeSchema, client);
 
     // 3. Створення початкового адміністратора за наявності email
+    const initialPlainPassword =
+      adminPassword && adminPassword.trim().length >= 6 ? adminPassword.trim() : "admin123";
+
     if (adminEmail) {
-      const defaultPasswordHash = await hashPassword("admin123");
+      const defaultPasswordHash = await hashPassword(initialPlainPassword);
       await client.query(
         `INSERT INTO "${safeSchema}".users (email, name, password_hash, role)
          VALUES ($1, $2, $3, 'admin')
@@ -115,6 +119,12 @@ export async function POST(request: NextRequest) {
         tenant: newTenant,
         schema: safeSchema,
         statementsExecuted: migrationResult.statementsExecuted,
+        initialAdmin: adminEmail ? {
+          email: adminEmail.trim().toLowerCase(),
+          password: initialPlainPassword,
+          subdomain: normalizedSubdomain,
+          role: "admin",
+        } : null,
       },
       { status: 201 }
     );
