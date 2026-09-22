@@ -64,7 +64,7 @@ export default function ProfilePage() {
 function ProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const queryTenant = searchParams.get("tenant") || searchParams.get("__tenant") || "acme";
+  const queryTenant = searchParams.get("tenant") || searchParams.get("__tenant") || "";
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<{
@@ -86,13 +86,14 @@ function ProfileContent() {
           headers: queryTenant ? { "x-tenant-override": queryTenant } : undefined,
         });
 
+        if (res.status === 401) {
+          window.location.replace("/login");
+          return;
+        }
+
         const data = await res.json();
         if (!res.ok || !data.success) {
-          if (res.status === 401) {
-            router.push(`/login?tenant=${encodeURIComponent(queryTenant)}`);
-            return;
-          }
-          throw new Error(data.error || "Не вдалося завантажити дані профілю");
+          throw new Error(data.error || "Не вдалося завантажити профіль");
         }
 
         setProfile(data.data);

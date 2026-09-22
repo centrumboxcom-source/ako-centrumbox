@@ -79,14 +79,14 @@ export default function HomePage() {
 
 function HomeContent() {
   const searchParams = useSearchParams();
-  const activeTenant = searchParams.get("tenant") || "acme";
-
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [resolvedTenant, setResolvedTenant] = useState<string>("");
+
   const [courses, setCourses] = useState<Course[]>([]);
   const [lessonsList, setLessonsList] = useState<LessonItem[]>([]);
   const [quizzesList, setQuizzesList] = useState<QuizItem[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderUser[]>([]);
-  const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"learning" | "architecture">("learning");
 
@@ -104,45 +104,37 @@ function HomeContent() {
     return "Доброго вечора";
   };
 
-  const loadAllData = useCallback(async () => {
+  const loadAllData = useCallback(async (tenant: string, user: any) => {
+    if (!tenant || tenant === "master") return;
     setLoading(true);
     try {
       // 1. Profile & user points
-      const profileRes = await fetch(`/api/profile?tenant=${encodeURIComponent(activeTenant)}`, {
-        headers: { "x-tenant-override": activeTenant },
+      const profileRes = await fetch(`/api/profile?tenant=${encodeURIComponent(tenant)}`, {
+        headers: { "x-tenant-override": tenant },
         cache: "no-store",
       });
       const profileData = await profileRes.json();
       if (profileData.success && profileData.data?.user) {
         setCurrentUser(profileData.data.user);
-      } else {
-        setCurrentUser(null);
       }
 
-      // 2. Student Dashboard progress
-      const dashboardRes = await fetch(`/api/student/dashboard?tenant=${encodeURIComponent(activeTenant)}`, {
-        headers: { "x-tenant-override": activeTenant },
-        cache: "no-store",
-      });
-      const dashboardData = await dashboardRes.json();
-
-      // 3. Courses
-      const coursesRes = await fetch(`/api/courses?tenant=${encodeURIComponent(activeTenant)}`, {
-        headers: { "x-tenant-override": activeTenant },
+      // 2. Courses
+      const coursesRes = await fetch(`/api/courses?tenant=${encodeURIComponent(tenant)}`, {
+        headers: { "x-tenant-override": tenant },
         cache: "no-store",
       });
       const coursesData = await coursesRes.json();
       const loadedCourses: Course[] = coursesData.success ? coursesData.data || [] : [];
       setCourses(loadedCourses);
 
-      // 4. Fetch lessons and quizzes for each course to build home cards
+      // 3. Fetch lessons and quizzes for each course to build home cards
       const allLessons: LessonItem[] = [];
       const allQuizzes: QuizItem[] = [];
 
       for (const c of loadedCourses) {
         // Lessons
-        const lRes = await fetch(`/api/courses/${c.id}/lessons?tenant=${encodeURIComponent(activeTenant)}`, {
-          headers: { "x-tenant-override": activeTenant },
+        const lRes = await fetch(`/api/courses/${c.id}/lessons?tenant=${encodeURIComponent(tenant)}`, {
+          headers: { "x-tenant-override": tenant },
           cache: "no-store",
         });
         const lData = await lRes.json();
@@ -155,14 +147,14 @@ function HomeContent() {
               title: l.title,
               order: l.order,
               points: l.points || 10,
-              isCompleted: true, // Completed based on profile
+              isCompleted: true,
             });
           });
         }
 
         // Quizzes
-        const qRes = await fetch(`/api/courses/${c.id}/quizzes?tenant=${encodeURIComponent(activeTenant)}`, {
-          headers: { "x-tenant-override": activeTenant },
+        const qRes = await fetch(`/api/courses/${c.id}/quizzes?tenant=${encodeURIComponent(tenant)}`, {
+          headers: { "x-tenant-override": tenant },
           cache: "no-store",
         });
         const qData = await qRes.json();
@@ -186,9 +178,9 @@ function HomeContent() {
       setLessonsList(allLessons);
       setQuizzesList(allQuizzes);
 
-      // 5. Leaderboard (accessible to students and admins)
-      const leaderboardRes = await fetch(`/api/leaderboard?tenant=${encodeURIComponent(activeTenant)}`, {
-        headers: { "x-tenant-override": activeTenant },
+      // 4. Leaderboard
+      const leaderboardRes = await fetch(`/api/leaderboard?tenant=${encodeURIComponent(tenant)}`, {
+        headers: { "x-tenant-override": tenant },
         cache: "no-store",
       });
       const leaderboardData = await leaderboardRes.json();
@@ -196,8 +188,8 @@ function HomeContent() {
         setLeaderboard(leaderboardData.data);
       }
 
-      // 6. Tenants list (for admin control plane)
-      if (profileData.data?.user?.role === "admin") {
+      // 5. Tenants list (for admin control plane)
+      if (user?.role === "admin") {
         const tenantsRes = await fetch("/api/admin/tenants", { cache: "no-store" });
         const tenantsData = await tenantsRes.json();
         if (tenantsData.success && tenantsData.tenants) {
@@ -209,11 +201,42 @@ function HomeContent() {
     } finally {
       setLoading(false);
     }
-  }, [activeTenant]);
+  }, []);
 
+  // Strict Authentication Check on Mount
   useEffect(() => {
-    loadAllData();
-  }, [loadAllData]);
+    async function verifyAuth() {
+      try {
+        const res = await fetch("/api/auth/me", { cache: "no-store" });
+        const data = await res.json();
+
+        if (!data.authenticated || !data.user) {
+          // Unauthenticated -> immediately redirect to /login
+          window.location.replace("/login");
+          return;
+        }
+
+        const user = data.user;
+        if (user.tenantSubdomain === "master") {
+          // Platform SuperAdmin -> immediately redirect to /superadmin
+          window.location.replace("/superadmin");
+          return;
+        }
+
+        const explicitTenant = searchParams.get("tenant") || searchParams.get("__tenant");
+        const tenant = explicitTenant || user.tenantSubdomain;
+
+        setCurrentUser(user);
+        setResolvedTenant(tenant);
+        setCheckingAuth(false);
+        loadAllData(tenant, user);
+      } catch {
+        window.location.replace("/login");
+      }
+    }
+
+    verifyAuth();
+  }, [searchParams, loadAllData]);
 
   const handleProvisionTenant = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,7 +258,9 @@ function HomeContent() {
         setProvisionMessage(`Організацію "${newTenantName}" успішно зареєстровано в Neon!`);
         setNewTenantName("");
         setNewSubdomain("");
-        loadAllData();
+        if (resolvedTenant && currentUser) {
+          loadAllData(resolvedTenant, currentUser);
+        }
       } else {
         setProvisionMessage(data.error || "Помилка створення організації");
       }
@@ -246,8 +271,17 @@ function HomeContent() {
     }
   };
 
+  if (checkingAuth || !currentUser) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-3">
+        <RefreshCw className="h-6 w-6 animate-spin text-indigo-600" />
+        <span className="text-xs text-slate-500 font-medium">Перевірка авторизації CENTRUMBOX AKO...</span>
+      </div>
+    );
+  }
+
   return (
-    <SpotifyShell currentTenant={activeTenant}>
+    <SpotifyShell currentTenant={resolvedTenant}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
         {/* Top Control Bar: Mode Toggle & Tenant Schema Badge (Visible ONLY to Admin) */}
         {currentUser?.role === "admin" && (
@@ -294,7 +328,7 @@ function HomeContent() {
               <span className="h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-emerald-200" />
               <span>Активна схема PostgreSQL:</span>
               <strong className="font-mono text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                "{activeTenant}"
+                "{resolvedTenant}"
               </strong>
             </div>
           </div>
@@ -307,77 +341,44 @@ function HomeContent() {
               <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
 
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                {currentUser ? (
-                  <>
-                    <div className="space-y-2">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-indigo-100">
-                        <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-                        CENTRUMBOX AKO • {activeTenant.toUpperCase()} ACADEMY
-                      </div>
-                      <h1 className="text-2xl sm:text-4xl font-black tracking-tight">
-                        {getGreeting()}, {currentUser.name}!
-                      </h1>
-                      <p className="text-sm sm:text-base text-indigo-100 max-w-xl">
-                        Усі ваші призначені уроки, практичні модулі та контрольні тестування зібрано нижче.
-                      </p>
-                    </div>
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-indigo-100">
+                    <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+                    CENTRUMBOX AKO • {resolvedTenant.toUpperCase()} ACADEMY
+                  </div>
+                  <h1 className="text-2xl sm:text-4xl font-black tracking-tight">
+                    {getGreeting()}, {currentUser.name}!
+                  </h1>
+                  <p className="text-sm sm:text-base text-indigo-100 max-w-xl">
+                    Усі ваші призначені уроки, практичні модулі та контрольні тестування зібрано нижче.
+                  </p>
+                </div>
 
-                    {/* Points Summary Badge */}
-                    <div className="p-4 sm:p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center gap-4 shrink-0 shadow-sm">
-                      <div className="h-12 w-12 rounded-xl bg-white text-indigo-600 flex items-center justify-center font-black text-xl shadow-md">
-                        {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : "U"}
-                      </div>
-                      <div>
-                        <span className="text-[11px] text-indigo-200 uppercase tracking-wider font-semibold block">
-                          Ваш поточний прогрес
-                        </span>
-                        <span className="text-sm font-black text-white block">
-                          {currentUser.rank?.title || "Спеціаліст"}
-                        </span>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-full bg-amber-400 text-slate-900">
-                            {currentUser.points ?? 0} балів
-                          </span>
-                          <Link
-                            href={`/profile?tenant=${encodeURIComponent(activeTenant)}`}
-                            className="text-xs text-white underline hover:text-indigo-200 transition font-semibold"
-                          >
-                            Мій кабінет →
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="space-y-2">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold uppercase tracking-wider text-indigo-100">
-                        <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-                        CENTRUMBOX AKO • КОРПОРАТИВНЕ НАВЧАННЯ
-                      </div>
-                      <h1 className="text-2xl sm:text-4xl font-black tracking-tight">
-                        Ласкаво просимо до навчального порталу
-                      </h1>
-                      <p className="text-sm sm:text-base text-indigo-100 max-w-xl leading-relaxed">
-                        Щоб отримати доступ до навчальних матеріалів, проходити призначені уроки, складати тестування та накопичувати бали, увійдіть у свій корпоративний акаунт.
-                      </p>
-                    </div>
-
-                    <div className="p-5 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex flex-col sm:flex-row items-center gap-4 shrink-0 shadow-sm">
-                      <div>
-                        <span className="text-xs text-indigo-200 block">Статус доступу:</span>
-                        <span className="text-sm font-bold text-white block">Гість (Не авторизовано)</span>
-                      </div>
+                {/* Points Summary Badge */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center gap-4 shrink-0 shadow-sm">
+                  <div className="h-12 w-12 rounded-xl bg-white text-indigo-600 flex items-center justify-center font-black text-xl shadow-md">
+                    {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : "U"}
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-indigo-200 uppercase tracking-wider font-semibold block">
+                      Ваш поточний прогрес
+                    </span>
+                    <span className="text-sm font-black text-white block">
+                      {currentUser.rank?.title || "Спеціаліст"}
+                    </span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-full bg-amber-400 text-slate-900">
+                        {currentUser.points ?? 0} балів
+                      </span>
                       <Link
-                        href={`/login?tenant=${encodeURIComponent(activeTenant)}`}
-                        className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-indigo-700 font-bold text-xs shadow-md transition flex items-center gap-2 shrink-0"
+                        href={`/profile?tenant=${encodeURIComponent(resolvedTenant)}`}
+                        className="text-xs text-white underline hover:text-indigo-200 transition font-semibold"
                       >
-                        <LogIn className="h-4 w-4" />
-                        Увійти до акаунта →
+                        Мій кабінет →
                       </Link>
                     </div>
-                  </>
-                )}
+                  </div>
+                </div>
               </div>
             </div>
 

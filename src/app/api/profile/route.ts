@@ -5,6 +5,8 @@ import { platformAdmins } from "@/db/schema/master";
 import { withTenantDb } from "@/db/connection-manager";
 import { users, userProgress, courses, quizzes, lessons } from "@/db/schema/tenant";
 import { getCurrentSession } from "@/lib/auth/session";
+import { AUTH_COOKIE_NAME } from "@/lib/auth/jwt";
+import { getTenantBySubdomain } from "@/lib/services/tenant-service";
 import { TENANT_HEADER } from "@/lib/tenant-context";
 
 export const dynamic = "force-dynamic";
@@ -61,23 +63,20 @@ function calculateRank(points: number): {
 }
 
 export async function GET(request: NextRequest) {
-  const subdomain = resolveSubdomain(request);
   const session = await getCurrentSession();
 
-  const targetTenant = subdomain || session?.tenantSubdomain;
-  if (!targetTenant) {
-    return NextResponse.json({ success: false, error: "Не вказано сабдомен компанії" }, { status: 400 });
-  }
-
-  const queryEmail = request.nextUrl.searchParams.get("email");
-  const activeEmail = session?.email || queryEmail;
-
-  if (!activeEmail) {
-    return NextResponse.json(
+  if (!session) {
+    const res = NextResponse.json(
       { success: false, error: "Необхідно авторизуватися" },
       { status: 401 }
     );
+    res.cookies.delete(AUTH_COOKIE_NAME);
+    return res;
   }
+
+  const subdomain = resolveSubdomain(request);
+  const targetTenant = subdomain || session.tenantSubdomain;
+  const activeEmail = session.email;
 
   // Handle Platform SuperAdmins (Master schema)
   if (targetTenant === "master" || session?.tenantSubdomain === "master") {
@@ -120,6 +119,17 @@ export async function GET(request: NextRequest) {
     } catch (e) {
       console.warn("Could not query platform_admins in profile:", e);
     }
+  }
+
+  // 2. Validate tenant existence in master DB
+  const tenant = await getTenantBySubdomain(targetTenant);
+  if (!tenant || !tenant.isActive) {
+    const res = NextResponse.json(
+      { success: false, error: "Організацію не знайдено або її було видалено." },
+      { status: 401 }
+    );
+    res.cookies.delete(AUTH_COOKIE_NAME);
+    return res;
   }
 
   try {
@@ -219,9 +229,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: profileData });
   } catch (error) {
-    return NextResponse.json(
+    const res = NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : "Помилка отримання профілю" },
-      { status: 500 }
+      { status: 401 }
     );
+    res.cookies.delete(AUTH_COOKIE_NAME);
+    return res;
   }
 }

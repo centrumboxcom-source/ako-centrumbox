@@ -4,6 +4,8 @@ import { getCurrentSession } from "@/lib/auth/session";
 import { withTenantDb } from "@/db/connection-manager";
 import { courses, lessons, quizzes, userProgress, users } from "@/db/schema/tenant";
 import { TENANT_HEADER } from "@/lib/tenant-context";
+import { getTenantBySubdomain } from "@/lib/services/tenant-service";
+import { AUTH_COOKIE_NAME } from "@/lib/auth/jwt";
 
 function resolveSubdomain(request: NextRequest): string | null {
   const headerSubdomain = request.headers.get(TENANT_HEADER);
@@ -18,18 +20,59 @@ export async function GET(request: NextRequest) {
     const session = await getCurrentSession();
 
     if (!session) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         { success: false, error: "Потрібна авторизація." },
         { status: 401 }
       );
+      res.cookies.delete(AUTH_COOKIE_NAME);
+      return res;
     }
 
     const targetSubdomain = subdomain || session.tenantSubdomain;
+
+    // Superadmin has no tenant dashboard
+    if (targetSubdomain === "master" || session.tenantSubdomain === "master") {
+      return NextResponse.json({
+        success: true,
+        data: {
+          user: {
+            id: session.userId,
+            name: session.name,
+            email: session.email,
+            role: session.role,
+            points: 0,
+            lastLoginAt: null,
+          },
+          stats: {
+            totalCourses: 0,
+            completedCourses: 0,
+            inProgressCourses: 0,
+            notStartedCourses: 0,
+            totalLessonsCompleted: 0,
+            totalQuizzesPassed: 0,
+            points: 0,
+          },
+          courses: [],
+        },
+      });
+    }
+
     if (session.tenantSubdomain.toLowerCase() !== targetSubdomain.toLowerCase()) {
       return NextResponse.json(
         { success: false, error: "Міжклієнтський доступ заборонено." },
         { status: 403 }
       );
+    }
+
+    // Check if tenant exists in database
+    const tenant = await getTenantBySubdomain(targetSubdomain);
+    if (!tenant || !tenant.isActive) {
+      const res = NextResponse.json(
+        { success: false, error: "Організацію не знайдено або її було видалено." },
+        { status: 401 }
+      );
+      res.cookies.delete(AUTH_COOKIE_NAME);
+      return res;
     }
 
     const dashboardData = await withTenantDb(targetSubdomain, async (db) => {
@@ -170,9 +213,11 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     console.error("Помилка завантаження студентського дашборду:", error);
-    return NextResponse.json(
+    const res = NextResponse.json(
       { success: false, error: error.message || "Помилка сервера" },
-      { status: 500 }
+      { status: 401 }
     );
+    res.cookies.delete(AUTH_COOKIE_NAME);
+    return res;
   }
 }

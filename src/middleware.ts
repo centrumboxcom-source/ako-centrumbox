@@ -68,6 +68,15 @@ export async function middleware(request: NextRequest) {
 
   // 3. All other routes (/, /learn, /admin, /profile, /superadmin, etc.) REQUIRE AUTHENTICATION!
   if (!token) {
+    if (pathname.startsWith("/api/")) {
+      const response = NextResponse.json(
+        { success: false, error: "Потрібна авторизація" },
+        { status: 401 }
+      );
+      response.cookies.delete(AUTH_COOKIE_NAME);
+      return response;
+    }
+
     const loginUrl = new URL("/login", request.url);
     if (pathname !== "/") {
       loginUrl.searchParams.set("from", pathname);
@@ -81,6 +90,15 @@ export async function middleware(request: NextRequest) {
   // Verify JWT
   const payload = await verifyTenantToken(token);
   if (!payload) {
+    if (pathname.startsWith("/api/")) {
+      const response = NextResponse.json(
+        { success: false, error: "Сесія недійсна або термін дії вичерпано" },
+        { status: 401 }
+      );
+      response.cookies.delete(AUTH_COOKIE_NAME);
+      return response;
+    }
+
     // Tampered or expired token -> flush cookie & redirect to login
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("error", "session_expired");

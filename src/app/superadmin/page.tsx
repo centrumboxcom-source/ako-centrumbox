@@ -142,7 +142,7 @@ function SuperadminContent() {
 
   if (loading) {
     return (
-      <SpotifyShell currentTenant="acme">
+      <SpotifyShell currentTenant="master">
         <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
           <RefreshCw className="h-6 w-6 animate-spin text-indigo-600" />
           <span className="text-xs text-slate-500 font-medium">Перевірка прав доступу до системної консолі...</span>
@@ -153,7 +153,7 @@ function SuperadminContent() {
 
   if (!currentUser) {
     return (
-      <SpotifyShell currentTenant="acme">
+      <SpotifyShell currentTenant="master">
         <div className="max-w-md mx-auto px-4 py-20 text-center space-y-6">
           <div className="mx-auto h-16 w-16 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
             <Lock className="h-8 w-8" />
@@ -177,7 +177,7 @@ function SuperadminContent() {
 
   if (currentUser.role !== "admin") {
     return (
-      <SpotifyShell currentTenant={currentUser?.tenantSubdomain || "acme"}>
+      <SpotifyShell currentTenant={currentUser?.tenantSubdomain || "master"}>
         <div className="max-w-lg mx-auto px-4 py-20 text-center space-y-6">
           <div className="mx-auto h-20 w-20 rounded-3xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center shadow-sm">
             <ShieldAlert className="h-10 w-10" />
@@ -209,7 +209,7 @@ function SuperadminContent() {
   }
 
   return (
-    <SpotifyShell currentTenant={currentUser?.tenantSubdomain || "acme"}>
+    <SpotifyShell currentTenant={currentUser?.tenantSubdomain || "master"}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-200">

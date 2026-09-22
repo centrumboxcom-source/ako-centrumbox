@@ -63,7 +63,7 @@ export default function LearnPage() {
 function LearnContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activeTenant = searchParams.get("tenant") || "acme";
+  const activeTenant = searchParams.get("tenant") || searchParams.get("__tenant") || "";
   const courseQueryParam = searchParams.get("course");
   const lessonQueryParam = searchParams.get("lesson");
   const quizQueryParam = searchParams.get("quiz");
@@ -88,6 +88,7 @@ function LearnContent() {
   const [dashboardData, setDashboardData] = useState<any>(null);
 
   const loadDashboard = async (tenant: string) => {
+    if (!tenant) return;
     try {
       const res = await fetch(`/api/student/dashboard?tenant=${encodeURIComponent(tenant)}`, {
         headers: { "x-tenant-override": tenant },
@@ -105,6 +106,7 @@ function LearnContent() {
   };
 
   const loadUserPoints = async (tenant: string) => {
+    if (!tenant) return;
     try {
       const res = await fetch(`/api/profile?tenant=${encodeURIComponent(tenant)}`, {
         headers: { "x-tenant-override": tenant },
@@ -122,9 +124,14 @@ function LearnContent() {
     fetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => {
-        if (data.authenticated) {
+        if (data.authenticated && data.user) {
           setCurrentUser(data.user);
-          const tenant = data.user.tenantSubdomain || activeTenant;
+          const tenant = activeTenant || data.user.tenantSubdomain;
+          if (!tenant || tenant === "master") {
+            window.location.replace("/superadmin");
+            return;
+          }
+
           loadUserPoints(tenant);
           loadDashboard(tenant);
 
@@ -146,10 +153,10 @@ function LearnContent() {
               }
             });
         } else {
-          router.push(`/login?tenant=${encodeURIComponent(activeTenant)}`);
+          window.location.replace("/login");
         }
       })
-      .catch(() => router.push(`/login?tenant=${encodeURIComponent(activeTenant)}`))
+      .catch(() => window.location.replace("/login"))
       .finally(() => setLoading(false));
   }, [router, activeTenant, courseQueryParam]);
 
