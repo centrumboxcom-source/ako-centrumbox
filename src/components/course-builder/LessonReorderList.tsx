@@ -174,25 +174,25 @@ export function LessonReorderList({
 
   return (
     <div className="flex flex-col h-full space-y-4">
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+      <div className="flex items-center justify-between pb-3 border-b border-slate-200">
         <div>
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-indigo-400" />
+          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-indigo-600" />
             Програма курсу ({lessons.length})
           </h2>
           <p className="text-xs text-slate-500">Сортування та перемикання уроків</p>
         </div>
 
         {orderSavedSuccess && (
-          <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800/60">
+          <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
             <Check className="h-3 w-3" /> Збережено
           </span>
         )}
       </div>
 
       {errorMessage && (
-        <div className="p-2.5 rounded-lg bg-rose-950/40 border border-rose-800/60 text-xs text-rose-300 flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-rose-400 shrink-0" />
+        <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
@@ -200,7 +200,7 @@ export function LessonReorderList({
       {/* Lesson List */}
       <div className="flex-1 overflow-y-auto space-y-2 pr-1">
         {lessons.length === 0 ? (
-          <div className="py-8 text-center text-xs text-slate-500 italic border border-dashed border-slate-800 rounded-xl">
+          <div className="py-8 text-center text-xs text-slate-500 italic border border-dashed border-slate-200 rounded-xl bg-slate-50/60">
             У курсі ще немає уроків.
             <br />
             Натисніть кнопку нижче, щоб додати перший урок.
@@ -213,8 +213,8 @@ export function LessonReorderList({
                 key={lesson.id}
                 className={`group flex items-center justify-between p-2.5 rounded-xl border transition cursor-pointer ${
                   isActive
-                    ? "bg-indigo-600/20 border-indigo-500 shadow-md shadow-indigo-600/10"
-                    : "bg-slate-900/60 border-slate-800/80 hover:bg-slate-850 hover:border-slate-700"
+                    ? "bg-indigo-50 border-indigo-300 shadow-sm"
+                    : "bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300"
                 }`}
                 onClick={() => onSelectLesson(lesson.id)}
               >
@@ -223,7 +223,7 @@ export function LessonReorderList({
                     className={`flex items-center justify-center h-6 w-6 rounded-lg text-xs font-mono font-bold shrink-0 ${
                       isActive
                         ? "bg-indigo-600 text-white shadow-sm"
-                        : "bg-slate-800 text-slate-400"
+                        : "bg-slate-100 text-slate-600"
                     }`}
                   >
                     {index + 1}
@@ -231,7 +231,7 @@ export function LessonReorderList({
                   <div className="min-w-0 flex-1">
                     <p
                       className={`text-xs font-semibold truncate ${
-                        isActive ? "text-white" : "text-slate-300 group-hover:text-white"
+                        isActive ? "text-indigo-950 font-bold" : "text-slate-800 group-hover:text-indigo-600"
                       }`}
                     >
                       {lesson.title}
@@ -252,7 +252,7 @@ export function LessonReorderList({
                     type="button"
                     disabled={index === 0 || isSavingOrder}
                     onClick={() => moveLesson(index, "up")}
-                    className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-20 transition"
+                    className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-20 transition"
                     title="Підняти вище"
                   >
                     <ChevronUp className="h-3.5 w-3.5" />
@@ -261,7 +261,7 @@ export function LessonReorderList({
                     type="button"
                     disabled={index === lessons.length - 1 || isSavingOrder}
                     onClick={() => moveLesson(index, "down")}
-                    className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-20 transition"
+                    className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-20 transition"
                     title="Опустити нижче"
                   >
                     <ChevronDown className="h-3.5 w-3.5" />
@@ -269,10 +269,10 @@ export function LessonReorderList({
                   <button
                     type="button"
                     onClick={() => handleDeleteLesson(lesson.id, lesson.title)}
-                    className="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition ml-0.5"
+                    className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition ml-0.5"
                     title="Видалити урок"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
               </div>
@@ -282,7 +282,7 @@ export function LessonReorderList({
       </div>
 
       {/* Add Lesson Form or Trigger */}
-      <div className="pt-2 border-t border-slate-800">
+      <div className="pt-2 border-t border-slate-200">
         {isCreating ? (
           <form onSubmit={handleCreateLesson} className="space-y-2">
             <input
@@ -291,12 +291,12 @@ export function LessonReorderList({
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               placeholder="Назва нового уроку..."
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-indigo-500 text-white placeholder-slate-600 text-xs focus:outline-none"
+              className="w-full px-3 py-2 rounded-xl bg-white border border-indigo-400 text-slate-900 placeholder-slate-400 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
             <div className="flex items-center gap-2">
               <button
                 type="submit"
-                className="flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition"
+                className="flex-1 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition shadow-sm"
               >
                 Створити
               </button>
@@ -306,7 +306,7 @@ export function LessonReorderList({
                   setIsCreating(false);
                   setNewTitle("");
                 }}
-                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition"
+                className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition"
               >
                 Скасувати
               </button>
@@ -316,9 +316,9 @@ export function LessonReorderList({
           <button
             type="button"
             onClick={() => setIsCreating(true)}
-            className="w-full py-2.5 rounded-xl border border-dashed border-slate-700 hover:border-indigo-500/80 bg-slate-900/40 hover:bg-indigo-950/20 text-indigo-300 hover:text-indigo-200 text-xs font-semibold flex items-center justify-center gap-2 transition shadow-sm"
+            className="w-full py-2.5 rounded-xl border border-dashed border-slate-300 hover:border-indigo-400 bg-slate-50 hover:bg-indigo-50/50 text-indigo-700 text-xs font-semibold flex items-center justify-center gap-2 transition shadow-sm"
           >
-            <Plus className="h-4 w-4 text-indigo-400" />
+            <Plus className="h-4 w-4 text-indigo-600" />
             Додати новий урок
           </button>
         )}
