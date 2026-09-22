@@ -3,10 +3,12 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { withTenantDb } from "@/db/connection-manager";
 import { users } from "@/db/schema/tenant";
-import { getTenantBySubdomain } from "@/lib/services/tenant-service";
+import { getAllTenants, getTenantBySubdomain } from "@/lib/services/tenant-service";
 import { verifyPassword } from "@/lib/auth/password";
 import { signTenantToken, AUTH_COOKIE_NAME } from "@/lib/auth/jwt";
 import { TENANT_HEADER } from "@/lib/tenant-context";
+
+export const dynamic = "force-dynamic";
 
 const loginSchema = z.object({
   email: z.string().email("Введіть коректну адресу email"),
@@ -27,98 +29,136 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, password } = parsed.data;
+    const normalizedEmail = email.toLowerCase().trim();
 
-    // Resolve subdomain: from request headers, query, or explicit body
-    const subdomain = (
+    // Check optional subdomain passed in headers, query, or body
+    const explicitSubdomain = (
+      parsed.data.subdomain ||
       request.headers.get(TENANT_HEADER) ||
       request.headers.get("x-tenant-override") ||
       request.nextUrl.searchParams.get("tenant") ||
-      parsed.data.subdomain ||
       ""
-    )
-      .trim()
-      .toLowerCase();
+    ).trim().toLowerCase();
 
-    if (!subdomain) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Не вказано сабдомен компанії. Авторизація можлива лише в контексті конкретного тенанта.",
-        },
-        { status: 400 }
-      );
-    }
+    let matchedTenant: string | null = null;
+    let authenticatedUser: any = null;
 
-    // 1. Check if tenant exists in Master DB
-    const tenant = await getTenantBySubdomain(subdomain);
-    if (!tenant) {
-      return NextResponse.json(
-        { success: false, error: `Компанію із сабдоменом '${subdomain}' не знайдено.` },
-        { status: 404 }
-      );
-    }
+    // 1. If explicit subdomain was provided, check it first
+    if (explicitSubdomain) {
+      const tenant = await getTenantBySubdomain(explicitSubdomain);
+      if (tenant && tenant.isActive) {
+        try {
+          const user = await withTenantDb(explicitSubdomain, async (db) => {
+            const [u] = await db
+              .select()
+              .from(users)
+              .where(eq(users.email, normalizedEmail))
+              .limit(1);
+            return u;
+          });
 
-    if (!tenant.isActive) {
-      return NextResponse.json(
-        { success: false, error: `Компанія '${subdomain}' деактивована.` },
-        { status: 403 }
-      );
-    }
-
-    // 2. Query user STRICTLY within the tenant's isolated schema
-    const authResult = await withTenantDb(subdomain, async (db) => {
-      const [foundUser] = await db
-        .select()
-        .from(users)
-        .where(eq(users.email, email.toLowerCase().trim()))
-        .limit(1);
-
-      if (!foundUser) {
-        return { error: `Користувача не знайдено в просторі компанії '${subdomain}'` };
+          if (user) {
+            const isValid = await verifyPassword(password, user.passwordHash);
+            if (isValid) {
+              matchedTenant = explicitSubdomain;
+              authenticatedUser = user;
+            }
+          }
+        } catch {
+          // ignore error and proceed to search
+        }
       }
+    }
 
-      const isValid = await verifyPassword(password, foundUser.passwordHash);
-      if (!isValid) {
-        return { error: "Невірний пароль" };
+    // 2. If not matched in explicit subdomain, search across all active tenants
+    if (!authenticatedUser) {
+      const allTenants = await getAllTenants();
+      for (const t of allTenants) {
+        if (!t.isActive) continue;
+        if (t.subdomain === explicitSubdomain) continue; // already checked
+
+        try {
+          const user = await withTenantDb(t.subdomain, async (db) => {
+            const [u] = await db
+              .select()
+              .from(users)
+              .where(eq(users.email, normalizedEmail))
+              .limit(1);
+            return u;
+          });
+
+          if (user) {
+            const isValid = await verifyPassword(password, user.passwordHash);
+            if (isValid) {
+              matchedTenant = t.subdomain;
+              authenticatedUser = user;
+              break;
+            }
+          }
+        } catch {
+          // continue checking other tenant schemas
+        }
       }
+    }
 
-      await db
-        .update(users)
-        .set({ lastLoginAt: new Date() })
-        .where(eq(users.id, foundUser.id));
-
-      return { user: foundUser };
-    });
-
-    if ("error" in authResult && authResult.error) {
+    // 3. If no matching user found or wrong password
+    if (!authenticatedUser || !matchedTenant) {
       return NextResponse.json(
-        { success: false, error: authResult.error },
+        { success: false, error: "Невірний email або пароль." },
         { status: 401 }
       );
     }
 
-    const user = authResult.user!;
+    // 4. Update last login timestamp
+    try {
+      await withTenantDb(matchedTenant, async (db) => {
+        await db
+          .update(users)
+          .set({ lastLoginAt: new Date() })
+          .where(eq(users.id, authenticatedUser.id));
+      });
+    } catch (err) {
+      console.error("Failed to update lastLoginAt:", err);
+    }
 
-    // 3. Generate JWT Token bound to tenant and role
+    // 5. Generate JWT Token bound to resolved tenant and role
     const token = await signTenantToken({
-      userId: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      tenantSubdomain: subdomain,
+      userId: authenticatedUser.id,
+      email: authenticatedUser.email,
+      name: authenticatedUser.name,
+      role: authenticatedUser.role,
+      tenantSubdomain: matchedTenant,
     });
 
-    // 4. Return response with HTTP-only cookie
+    // 6. Compute smart destination route based on role
+    const requestedFrom =
+      request.nextUrl.searchParams.get("from") ||
+      request.nextUrl.searchParams.get("redirect");
+
+    let redirectTo = `/learn?tenant=${matchedTenant}`;
+
+    if (requestedFrom && requestedFrom !== "/login" && !requestedFrom.startsWith("/login")) {
+      redirectTo = requestedFrom;
+    } else if (authenticatedUser.role === "admin") {
+      redirectTo = `/admin?tenant=${matchedTenant}`;
+    } else if (authenticatedUser.role === "instructor") {
+      redirectTo = `/admin?tenant=${matchedTenant}`;
+    } else {
+      redirectTo = `/learn?tenant=${matchedTenant}`;
+    }
+
+    // 7. Return response with HTTP-only cookie and destination
     const response = NextResponse.json({
       success: true,
-      message: `Успішний вхід у простір '${subdomain}'`,
+      message: `Успішний вхід у простір '${matchedTenant}'`,
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        tenantSubdomain: subdomain,
+        id: authenticatedUser.id,
+        email: authenticatedUser.email,
+        name: authenticatedUser.name,
+        role: authenticatedUser.role,
+        tenantSubdomain: matchedTenant,
       },
+      redirectTo,
     });
 
     response.cookies.set({

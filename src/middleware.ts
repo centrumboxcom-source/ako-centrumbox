@@ -23,7 +23,6 @@ export async function middleware(request: NextRequest) {
         subdomain = parts[0];
       }
     } else if (hostWithoutPort !== rootDomain && hostWithoutPort.endsWith(`.${rootDomain}`)) {
-      // Production subdomain (e.g., "acme.example.com")
       const candidate = hostWithoutPort.slice(0, -(rootDomain.length + 1));
       if (candidate && candidate !== "www" && candidate !== "api") {
         subdomain = candidate;
@@ -37,67 +36,90 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set("x-tenant-subdomain", subdomain.toLowerCase());
   }
 
-  // 2. Identify Protected Routes
-  const isAdminRoute = (pathname.startsWith("/admin") || pathname.startsWith("/superadmin")) && !pathname.startsWith("/api/admin/tenants");
-  const isLearnRoute = pathname.startsWith("/learn");
-  const isProtectedRoute = isAdminRoute || isLearnRoute;
+  // 2. Identify Public vs Protected Routes
+  const isPublicRoute =
+    pathname === "/login" ||
+    pathname.startsWith("/invite") ||
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/tenants/public");
 
-  if (isProtectedRoute) {
-    const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
-    // No token -> Redirect to login
-    if (!token) {
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("from", pathname);
-      if (subdomain) loginUrl.searchParams.set("subdomain", subdomain);
-      loginUrl.searchParams.set("error", "unauthorized");
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // Verify JWT
+  // If visiting /login while already authenticated -> redirect to appropriate workspace
+  if (pathname === "/login" && token) {
     const payload = await verifyTenantToken(token);
-    if (!payload) {
-      // Tampered or expired token
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("error", "session_expired");
-      const response = NextResponse.redirect(loginUrl);
-      response.cookies.delete(AUTH_COOKIE_NAME);
-      return response;
+    if (payload) {
+      const targetWorkspace =
+        payload.role === "admin"
+          ? `/admin?tenant=${encodeURIComponent(payload.tenantSubdomain)}`
+          : `/learn?tenant=${encodeURIComponent(payload.tenantSubdomain)}`;
+      return NextResponse.redirect(new URL(targetWorkspace, request.url));
     }
+  }
 
-    // 3. CRITICAL: Cross-Tenant Isolation Check
-    // If request is made to subdomain B with a token issued for subdomain A -> STRICTLY FORBIDDEN!
-    if (subdomain && payload.tenantSubdomain.toLowerCase() !== subdomain.toLowerCase()) {
+  // If public route, allow downstream
+  if (isPublicRoute) {
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  }
+
+  // 3. All other routes (/, /learn, /admin, /profile, /superadmin, etc.) REQUIRE AUTHENTICATION!
+  if (!token) {
+    const loginUrl = new URL("/login", request.url);
+    if (pathname !== "/") {
+      loginUrl.searchParams.set("from", pathname);
+    }
+    if (subdomain) {
+      loginUrl.searchParams.set("tenant", subdomain);
+    }
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Verify JWT
+  const payload = await verifyTenantToken(token);
+  if (!payload) {
+    // Tampered or expired token -> flush cookie & redirect to login
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("error", "session_expired");
+    const response = NextResponse.redirect(loginUrl);
+    response.cookies.delete(AUTH_COOKIE_NAME);
+    return response;
+  }
+
+  // 4. Cross-Tenant Isolation Check (non-admins cannot access other tenant subdomains)
+  if (subdomain && payload.tenantSubdomain.toLowerCase() !== subdomain.toLowerCase()) {
+    if (payload.role !== "admin") {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("error", "cross_tenant_forbidden");
       loginUrl.searchParams.set("userTenant", payload.tenantSubdomain);
       loginUrl.searchParams.set("targetTenant", subdomain);
       return NextResponse.redirect(loginUrl);
     }
-
-    // 4. Role-Based Access Control (RBAC)
-    if (isAdminRoute) {
-      // Only 'admin' role allowed in /admin and /superadmin
-      if (payload.role !== "admin") {
-        const redirectUrl = new URL("/", request.url);
-        redirectUrl.searchParams.set("error", "insufficient_permissions");
-        return NextResponse.redirect(redirectUrl);
-      }
-    } else if (isLearnRoute) {
-      // 'student', 'instructor', 'admin' can access /learn
-      if (!["student", "instructor", "admin"].includes(payload.role)) {
-        const loginUrl = new URL("/login", request.url);
-        loginUrl.searchParams.set("error", "forbidden");
-        return NextResponse.redirect(loginUrl);
-      }
-    }
-
-    // Attach verified user information to downstream request headers
-    requestHeaders.set("x-user-id", payload.userId);
-    requestHeaders.set("x-user-role", payload.role);
-    requestHeaders.set("x-user-email", payload.email);
-    requestHeaders.set("x-user-tenant", payload.tenantSubdomain);
   }
+
+  // 5. Role-Based Access Control (RBAC)
+  const isAdminRoute =
+    (pathname.startsWith("/admin") || pathname.startsWith("/superadmin")) &&
+    !pathname.startsWith("/api/admin/tenants");
+
+  if (isAdminRoute) {
+    // Only 'admin' role allowed in /admin and /superadmin
+    if (payload.role !== "admin") {
+      const redirectUrl = new URL("/learn", request.url);
+      redirectUrl.searchParams.set("tenant", payload.tenantSubdomain);
+      redirectUrl.searchParams.set("error", "insufficient_permissions");
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  // Attach verified user information to downstream request headers
+  requestHeaders.set("x-user-id", payload.userId);
+  requestHeaders.set("x-user-role", payload.role);
+  requestHeaders.set("x-user-email", payload.email);
+  requestHeaders.set("x-user-tenant", payload.tenantSubdomain);
 
   return NextResponse.next({
     request: {
