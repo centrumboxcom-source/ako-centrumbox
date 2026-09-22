@@ -56,11 +56,7 @@ export function AppHeader({ currentTenant: propTenant, userOverride }: AppHeader
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [availableTenants, setAvailableTenants] = useState<Array<{ id: string; name: string; subdomain: string }>>([
-    { id: "1", name: "Acme Corporation", subdomain: "acme" },
-    { id: "2", name: "Globex Industries", subdomain: "globex" },
-    { id: "3", name: "Nova Tech Labs", subdomain: "nova" },
-  ]);
+  const [availableTenants, setAvailableTenants] = useState<Array<{ id: string; name: string; subdomain: string }>>([]);
 
   const tenantMenuRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -91,6 +87,20 @@ export function AppHeader({ currentTenant: propTenant, userOverride }: AppHeader
     fetchCurrentUser();
   }, [activeTenant, userOverride]);
 
+  // Load available tenants dynamically for admins
+  useEffect(() => {
+    if (user?.role === "admin") {
+      fetch("/api/admin/tenants", { cache: "no-store" })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.tenants)) {
+            setAvailableTenants(data.tenants);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user?.role]);
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (tenantMenuRef.current && !tenantMenuRef.current.contains(e.target as Node)) {
@@ -119,7 +129,7 @@ export function AppHeader({ currentTenant: propTenant, userOverride }: AppHeader
     }
     setUser(null);
     setProfileDropdownOpen(false);
-    window.location.href = `/login?tenant=${encodeURIComponent(activeTenant)}`;
+    window.location.href = "/login";
   };
 
   const isAdminOrInstructor = user?.role === "admin" || user?.role === "instructor";
@@ -187,32 +197,47 @@ export function AppHeader({ currentTenant: propTenant, userOverride }: AppHeader
                   title="Переключити простір організації (Admin Only)"
                 >
                   <span className="h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-emerald-200" />
-                  <span className="uppercase tracking-wider font-mono text-[11px]">{activeTenant}</span>
+                  <span className="uppercase tracking-wider font-mono text-[11px]">
+                    {activeTenant === "master" ? "СИСТЕМА" : activeTenant}
+                  </span>
                   <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
                 </button>
 
                 {tenantDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-60 rounded-2xl bg-white border border-slate-200 shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute top-full left-0 mt-2 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
                     <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
                       Організація (Tenant Схема)
                     </div>
-                    {availableTenants.map((t) => (
-                      <button
-                        key={t.subdomain}
-                        onClick={() => handleTenantSwitch(t.subdomain)}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition ${
-                          activeTenant === t.subdomain
-                            ? "bg-indigo-50 text-indigo-600"
-                            : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-3.5 w-3.5 opacity-60" />
-                          <span>{t.name}</span>
-                        </div>
-                        {activeTenant === t.subdomain && <Check className="h-3.5 w-3.5 text-indigo-600" />}
-                      </button>
-                    ))}
+                    {availableTenants.length > 0 ? (
+                      availableTenants.map((t) => (
+                        <button
+                          key={t.subdomain}
+                          onClick={() => handleTenantSwitch(t.subdomain)}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition ${
+                            activeTenant === t.subdomain
+                              ? "bg-indigo-50 text-indigo-600"
+                              : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-3.5 w-3.5 opacity-60" />
+                            <span className="truncate">{t.name}</span>
+                          </div>
+                          {activeTenant === t.subdomain && <Check className="h-3.5 w-3.5 text-indigo-600 shrink-0" />}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="p-3 text-center text-xs text-slate-500">
+                        <p>Організацій ще не створено.</p>
+                        <Link
+                          href="/superadmin"
+                          onClick={() => setTenantDropdownOpen(false)}
+                          className="mt-1 inline-block font-bold text-indigo-600 hover:underline"
+                        >
+                          Створити першу в Консолі →
+                        </Link>
+                      </div>
+                    )}
                     <div className="p-2 mt-1 border-t border-slate-100 text-[10px] text-emerald-600 flex items-center gap-1.5">
                       <Shield className="h-3 w-3" />
                       <span>Neon PostgreSQL Ізоляція</span>
@@ -223,7 +248,9 @@ export function AppHeader({ currentTenant: propTenant, userOverride }: AppHeader
             ) : (
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-emerald-200" />
-                <span className="uppercase tracking-wider font-mono text-[11px]">{activeTenant}</span>
+                <span className="uppercase tracking-wider font-mono text-[11px]">
+                  {activeTenant === "master" ? "СИСТЕМА" : activeTenant}
+                </span>
               </div>
             )}
 

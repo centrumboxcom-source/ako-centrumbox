@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq, desc } from "drizzle-orm";
+import { masterDb } from "@/db/master";
+import { platformAdmins } from "@/db/schema/master";
 import { withTenantDb } from "@/db/connection-manager";
 import { users, userProgress, courses, quizzes, lessons } from "@/db/schema/tenant";
 import { getCurrentSession } from "@/lib/auth/session";
@@ -75,6 +77,49 @@ export async function GET(request: NextRequest) {
       { success: false, error: "Необхідно авторизуватися" },
       { status: 401 }
     );
+  }
+
+  // Handle Platform SuperAdmins (Master schema)
+  if (targetTenant === "master" || session?.tenantSubdomain === "master") {
+    try {
+      const [admin] = await masterDb
+        .select()
+        .from(platformAdmins)
+        .where(eq(platformAdmins.email, activeEmail.toLowerCase().trim()))
+        .limit(1);
+
+      if (admin) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            user: {
+              id: admin.id,
+              name: admin.name,
+              email: admin.email,
+              role: "admin",
+              points: 0,
+              tenantSubdomain: "master",
+              rank: {
+                title: "Супер-Адміністратор",
+                badge: "⚡",
+                level: 99,
+                nextTier: 9999,
+                progressPercent: 100,
+              },
+            },
+            stats: {
+              lessonsCompleted: 0,
+              quizzesPassed: 0,
+              averageQuizScore: 100,
+              totalActivities: 0,
+            },
+            history: [],
+          },
+        });
+      }
+    } catch (e) {
+      console.warn("Could not query platform_admins in profile:", e);
+    }
   }
 
   try {

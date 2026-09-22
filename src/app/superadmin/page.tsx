@@ -436,57 +436,69 @@ function SuperadminContent() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tenants.map((t) => (
-              <div
-                key={t.subdomain}
-                className="p-5 rounded-2xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition bg-white space-y-4 flex flex-col justify-between"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      АКТИВНИЙ ТЕНАНТ
-                    </span>
-                    <span className="text-[11px] font-mono text-slate-400">
-                      schema: <strong className="text-slate-700">"{t.subdomain}"</strong>
-                    </span>
+          {tenants.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {tenants.map((t) => (
+                <div
+                  key={t.subdomain}
+                  className="p-5 rounded-2xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition bg-white space-y-4 flex flex-col justify-between"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        АКТИВНИЙ ТЕНАНТ
+                      </span>
+                      <span className="text-[11px] font-mono text-slate-400">
+                        schema: <strong className="text-slate-700">"{t.subdomain}"</strong>
+                      </span>
+                    </div>
+
+                    <h3 className="text-base font-bold text-slate-900">{t.name}</h3>
+                    <p className="text-xs text-slate-500">
+                      Ізольована схема бази даних у Neon PostgreSQL з власними користувачами, курсами та прогресом.
+                    </p>
                   </div>
 
-                  <h3 className="text-base font-bold text-slate-900">{t.name}</h3>
-                  <p className="text-xs text-slate-500">
-                    Ізольована схема бази даних у Neon PostgreSQL з власними користувачами, курсами та прогресом.
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => handleSwitchToTenantAsAdmin(t.subdomain)}
-                    className="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
-                  >
-                    <span>Увійти в компанію як Admin</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
-
-                  <div className="flex items-center justify-between gap-2 text-xs">
-                    <Link
-                      href={`/admin?tenant=${encodeURIComponent(t.subdomain)}`}
-                      className="flex-1 py-1.5 text-center rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold transition"
+                  <div className="pt-3 border-t border-slate-100 space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSwitchToTenantAsAdmin(t.subdomain)}
+                      className="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
                     >
-                      HR Студія
-                    </Link>
-                    <Link
-                      href={`/learn?tenant=${encodeURIComponent(t.subdomain)}`}
-                      className="flex-1 py-1.5 text-center rounded-lg bg-slate-50 hover:bg-slate-100 text-indigo-600 font-semibold transition"
-                    >
-                      Навчання
-                    </Link>
+                      <span>Увійти в компанію як Admin</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+
+                    <div className="flex items-center justify-between gap-2 text-xs">
+                      <Link
+                        href={`/admin?tenant=${encodeURIComponent(t.subdomain)}`}
+                        className="flex-1 py-1.5 text-center rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold transition"
+                      >
+                        HR Студія
+                      </Link>
+                      <Link
+                        href={`/learn?tenant=${encodeURIComponent(t.subdomain)}`}
+                        className="flex-1 py-1.5 text-center rounded-lg bg-slate-50 hover:bg-slate-100 text-indigo-600 font-semibold transition"
+                      >
+                        Навчання
+                      </Link>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-12 text-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 space-y-3">
+              <div className="mx-auto h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <Building2 className="h-6 w-6" />
               </div>
-            ))}
-          </div>
+              <h3 className="text-sm font-bold text-slate-900">Немає зареєстрованих організацій</h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                База даних повністю чиста. Створіть вашу першу корпоративну організацію за допомогою форми вище.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </SpotifyShell>

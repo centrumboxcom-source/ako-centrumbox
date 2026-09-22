@@ -10,7 +10,9 @@
     "db:master:generate": "drizzle-kit generate --config=drizzle.master.config.ts",
     "db:tenant:generate": "drizzle-kit generate --config=drizzle.tenant.config.ts",
     "db:master:migrate": "node -r dotenv/config dist/scripts/migrate-master.js",
-    "db:seed": "node -r dotenv/config dist/scripts/seed.js"
+    "db:seed": "node -r dotenv/config dist/scripts/seed.js",
+    "db:wipe": "tsx src/scripts/wipe_clean_database.ts",
+    "create:superadmin": "tsx src/scripts/create_superadmin.ts"
   },
   "dependencies": {
     "@neon/config": "^1.7.2",

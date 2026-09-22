@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
+import { masterDb } from "@/db/master";
+import { platformAdmins } from "@/db/schema/master";
 import { withTenantDb } from "@/db/connection-manager";
 import { users } from "@/db/schema/tenant";
 import { getAllTenants, getTenantBySubdomain } from "@/lib/services/tenant-service";
@@ -30,6 +32,60 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = parsed.data;
     const normalizedEmail = email.toLowerCase().trim();
+
+    // 0. Check Platform SuperAdmins (Master DB - works even when 0 companies exist)
+    try {
+      const [platformAdmin] = await masterDb
+        .select()
+        .from(platformAdmins)
+        .where(eq(platformAdmins.email, normalizedEmail))
+        .limit(1);
+
+      if (platformAdmin) {
+        const isValid = await verifyPassword(password, platformAdmin.passwordHash);
+        if (isValid) {
+          const token = await signTenantToken({
+            userId: platformAdmin.id,
+            email: platformAdmin.email,
+            name: platformAdmin.name,
+            role: "admin",
+            tenantSubdomain: "master",
+          });
+
+          const response = NextResponse.json({
+            success: true,
+            message: "Успішний вхід як Супер-Адміністратор платформи",
+            user: {
+              id: platformAdmin.id,
+              email: platformAdmin.email,
+              name: platformAdmin.name,
+              role: "admin",
+              tenantSubdomain: "master",
+            },
+            redirectTo: "/superadmin",
+          });
+
+          response.cookies.set({
+            name: AUTH_COOKIE_NAME,
+            value: token,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 60 * 60 * 24 * 7,
+          });
+
+          return response;
+        } else {
+          return NextResponse.json(
+            { success: false, error: "Невірний email або пароль." },
+            { status: 401 }
+          );
+        }
+      }
+    } catch (adminErr) {
+      console.warn("Notice: could not query platform_admins:", adminErr);
+    }
 
     // Check optional subdomain passed in headers, query, or body
     const explicitSubdomain = (

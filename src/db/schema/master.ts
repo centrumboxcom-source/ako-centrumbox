@@ -30,6 +30,15 @@ export const invites = pgTable("invites", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const platformAdmins = pgTable("platform_admins", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  name: varchar("name", { length: 255 }).notNull(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const tenantsRelations = relations(tenants, ({ many }) => ({
   invites: many(invites),
 }));
@@ -45,3 +54,5 @@ export type Tenant = typeof tenants.$inferSelect;
 export type NewTenant = typeof tenants.$inferInsert;
 export type Invite = typeof invites.$inferSelect;
 export type NewInvite = typeof invites.$inferInsert;
+export type PlatformAdmin = typeof platformAdmins.$inferSelect;
+export type NewPlatformAdmin = typeof platformAdmins.$inferInsert;

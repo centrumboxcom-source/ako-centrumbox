@@ -51,7 +51,7 @@ export async function middleware(request: NextRequest) {
     if (payload) {
       const targetWorkspace =
         payload.role === "admin"
-          ? `/admin?tenant=${encodeURIComponent(payload.tenantSubdomain)}`
+          ? (payload.tenantSubdomain === "master" ? "/superadmin" : `/admin?tenant=${encodeURIComponent(payload.tenantSubdomain)}`)
           : `/learn?tenant=${encodeURIComponent(payload.tenantSubdomain)}`;
       return NextResponse.redirect(new URL(targetWorkspace, request.url));
     }
@@ -87,6 +87,11 @@ export async function middleware(request: NextRequest) {
     const response = NextResponse.redirect(loginUrl);
     response.cookies.delete(AUTH_COOKIE_NAME);
     return response;
+  }
+
+  // If SuperAdmin visits root "/" without explicit tenant param, direct to /superadmin console
+  if (pathname === "/" && payload.tenantSubdomain === "master" && !url.searchParams.has("tenant")) {
+    return NextResponse.redirect(new URL("/superadmin", request.url));
   }
 
   // 4. Cross-Tenant Isolation Check (non-admins cannot access other tenant subdomains)
