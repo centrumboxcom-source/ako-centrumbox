@@ -26,6 +26,11 @@ import {
   Copy,
   KeyRound,
   Check,
+  Edit3,
+  Trash2,
+  AlertTriangle,
+  X,
+  Save,
 } from "lucide-react";
 import { SpotifyShell } from "@/components/navigation/SpotifyShell";
 
@@ -63,6 +68,19 @@ function SuperadminContent() {
       role: string;
     } | null;
   } | null>(null);
+
+  // Edit tenant modal state
+  const [editingTenant, setEditingTenant] = useState<TenantInfo | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editIsActive, setEditIsActive] = useState(true);
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  // Delete tenant modal state
+  const [deletingTenant, setDeletingTenant] = useState<TenantInfo | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  // Action status message
+  const [actionMessage, setActionMessage] = useState<{ success: boolean; message: string } | null>(null);
 
   // Check auth session
   const checkSession = async () => {
@@ -151,6 +169,118 @@ function SuperadminContent() {
       });
     } finally {
       setProvisioning(false);
+    }
+  };
+
+  // Handle Edit Tenant
+  const handleOpenEdit = (t: TenantInfo) => {
+    setEditingTenant(t);
+    setEditName(t.name);
+    setEditIsActive(t.isActive);
+    setActionMessage(null);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTenant || !editName.trim()) return;
+
+    setSavingEdit(true);
+    setActionMessage(null);
+
+    try {
+      const res = await fetch(`/api/admin/tenants/${editingTenant.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editName.trim(),
+          isActive: editIsActive,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.tenant) {
+        setTenants((prev) =>
+          prev.map((t) => (t.id === editingTenant.id ? { ...t, ...data.tenant } : t))
+        );
+        setActionMessage({
+          success: true,
+          message: `Дані організації "${editName}" успішно оновлено!`,
+        });
+        setEditingTenant(null);
+      } else {
+        setActionMessage({
+          success: false,
+          message: data.error || "Не вдалося оновити дані організації",
+        });
+      }
+    } catch (err: any) {
+      setActionMessage({
+        success: false,
+        message: err.message || "Помилка при збереженні",
+      });
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  // Handle Toggle Active/Suspended
+  const handleToggleStatus = async (t: TenantInfo) => {
+    const newStatus = !t.isActive;
+    try {
+      const res = await fetch(`/api/admin/tenants/${t.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: newStatus }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.tenant) {
+        setTenants((prev) =>
+          prev.map((item) => (item.id === t.id ? { ...item, isActive: newStatus } : item))
+        );
+        setActionMessage({
+          success: true,
+          message: `Статус організації "${t.name}" змінено на: ${newStatus ? "АКТИВНА" : "ПРИЗУПИНЕНА"}`,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Handle Delete Tenant
+  const handleConfirmDelete = async () => {
+    if (!deletingTenant) return;
+
+    setDeleting(true);
+    setActionMessage(null);
+
+    try {
+      const res = await fetch(`/api/admin/tenants/${deletingTenant.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setTenants((prev) => prev.filter((t) => t.id !== deletingTenant.id));
+        setActionMessage({
+          success: true,
+          message: `Організацію "${deletingTenant.name}" та її клієнтську схему "${deletingTenant.subdomain}" успішно видалено з Neon PostgreSQL.`,
+        });
+        setDeletingTenant(null);
+      } else {
+        setActionMessage({
+          success: false,
+          message: data.error || "Не вдалося видалити організацію",
+        });
+      }
+    } catch (err: any) {
+      setActionMessage({
+        success: false,
+        message: err.message || "Помилка при видаленні",
+      });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -250,7 +380,7 @@ function SuperadminContent() {
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-bold uppercase tracking-wider text-indigo-200 border border-white/10">
-                <Box className="h-3.5 w-3.5 text-indigo-400" />
+                <img src="/logo.png" alt="CENTRUM" className="h-4 w-4 object-cover rounded-md" />
                 CENTRUMBOX AKO • ПЛАТФОРМЕНА ПАНЕЛЬ КЕРУВАННЯ
               </div>
               <h1 className="text-2xl sm:text-4xl font-black tracking-tight">
@@ -539,26 +669,83 @@ function SuperadminContent() {
             </button>
           </div>
 
+          {/* Action notification banner */}
+          {actionMessage && (
+            <div
+              className={`p-4 rounded-2xl text-xs flex items-center justify-between gap-3 animate-in fade-in duration-150 ${
+                actionMessage.success
+                  ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+                  : "bg-rose-50 border border-rose-200 text-rose-800"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                {actionMessage.success ? (
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                ) : (
+                  <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+                )}
+                <span className="font-semibold">{actionMessage.message}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActionMessage(null)}
+                className="p-1 rounded-lg hover:bg-black/5 text-slate-500 transition"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
           {tenants.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {tenants.map((t) => (
                 <div
                   key={t.subdomain}
-                  className="p-5 rounded-2xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition bg-white space-y-4 flex flex-col justify-between"
+                  className="p-5 rounded-3xl border border-slate-200 hover:border-indigo-300 hover:shadow-lg transition bg-white space-y-4 flex flex-col justify-between relative group"
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase flex items-center gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        АКТИВНИЙ ТЕНАНТ
-                      </span>
-                      <span className="text-[11px] font-mono text-slate-400">
-                        schema: <strong className="text-slate-700">"{t.subdomain}"</strong>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      {t.isActive ? (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase flex items-center gap-1.5 shadow-2xs">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          АКТИВНИЙ ТЕНАНТ
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 uppercase flex items-center gap-1.5 shadow-2xs">
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                          ⏸ ПРИЗУПИНЕНО
+                        </span>
+                      )}
+
+                      {/* Action buttons: Edit & Delete */}
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(t)}
+                          className="p-1.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition"
+                          title="Редагувати організацію"
+                        >
+                          <Edit3 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeletingTenant(t)}
+                          className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                          title="Видалити клієнта та схему з Neon"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="text-base font-black text-slate-900 truncate">{t.name}</h3>
+                      <span className="text-[11px] font-mono text-slate-400 block mt-0.5">
+                        schema: <strong className="text-indigo-600">"{t.subdomain}"</strong>
                       </span>
                     </div>
 
-                    <h3 className="text-base font-bold text-slate-900">{t.name}</h3>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 leading-relaxed">
                       Ізольована схема бази даних у Neon PostgreSQL з власними користувачами, курсами та прогресом.
                     </p>
                   </div>
@@ -567,7 +754,7 @@ function SuperadminContent() {
                     <button
                       type="button"
                       onClick={() => handleSwitchToTenantAsAdmin(t.subdomain)}
-                      className="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+                      className="w-full py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm shadow-indigo-600/20"
                     >
                       <span>Увійти в компанію як Admin</span>
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -576,16 +763,28 @@ function SuperadminContent() {
                     <div className="flex items-center justify-between gap-2 text-xs">
                       <Link
                         href={`/admin?tenant=${encodeURIComponent(t.subdomain)}`}
-                        className="flex-1 py-1.5 text-center rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold transition"
+                        className="flex-1 py-1.5 text-center rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold transition border border-slate-200/60"
                       >
                         HR Студія
                       </Link>
                       <Link
                         href={`/learn?tenant=${encodeURIComponent(t.subdomain)}`}
-                        className="flex-1 py-1.5 text-center rounded-lg bg-slate-50 hover:bg-slate-100 text-indigo-600 font-semibold transition"
+                        className="flex-1 py-1.5 text-center rounded-lg bg-slate-50 hover:bg-slate-100 text-indigo-600 font-bold transition border border-slate-200/60"
                       >
                         Навчання
                       </Link>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleStatus(t)}
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition ${
+                          t.isActive
+                            ? "bg-slate-50 hover:bg-amber-50 text-slate-500 hover:text-amber-700 border-slate-200"
+                            : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"
+                        }`}
+                        title={t.isActive ? "Призупинити доступ компанії" : "Активувати доступ компанії"}
+                      >
+                        {t.isActive ? "⏸" : "▶"}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -603,6 +802,166 @@ function SuperadminContent() {
             </div>
           )}
         </div>
+
+        {/* Edit Tenant Modal */}
+        {editingTenant && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <Edit3 className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">Редагування організації</h3>
+                    <span className="text-[11px] text-slate-400 font-mono">schema: "{editingTenant.subdomain}"</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingTenant(null)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEdit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Назва компанії
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-indigo-600 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Схема PostgreSQL у Neon (незмінна)
+                  </label>
+                  <input
+                    type="text"
+                    disabled
+                    value={editingTenant.subdomain}
+                    className="w-full p-3 rounded-xl bg-slate-100 border border-slate-200 text-xs font-mono text-slate-500 cursor-not-allowed"
+                  />
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Статус активності</span>
+                    <span className="text-[11px] text-slate-500 block">
+                      {editIsActive ? "Користувачі компанії можуть входити" : "Доступ компанії призупинено"}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditIsActive(!editIsActive)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
+                      editIsActive
+                        ? "bg-emerald-500 text-white border-emerald-600"
+                        : "bg-slate-200 text-slate-700 border-slate-300"
+                    }`}
+                  >
+                    {editIsActive ? "Активна ✓" : "Призупинена ⏸"}
+                  </button>
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setEditingTenant(null)}
+                    className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition"
+                  >
+                    Скасувати
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingEdit || !editName.trim()}
+                    className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    {savingEdit ? (
+                      <>
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                        <span>Збереження...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-3.5 w-3.5" />
+                        <span>Зберегти зміни</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deletingTenant && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-rose-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">Видалити організацію?</h3>
+                  <span className="text-xs text-slate-500">Компанія: <strong>{deletingTenant.name}</strong></span>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-900 space-y-2 leading-relaxed">
+                <p>
+                  ⚠️ <strong>Увага! Це незворотна дія:</strong>
+                </p>
+                <p>
+                  Клієнтська схема PostgreSQL <strong>"{deletingTenant.subdomain}"</strong> у хмарі Neon буде <strong>повністю видалена</strong> разом із:
+                </p>
+                <ul className="list-disc pl-4 space-y-0.5 text-rose-800">
+                  <li>Всіма акаунтами співробітників та HR-адмінів</li>
+                  <li>Корпоративними курсами та уроками</li>
+                  <li>Статистикою, сертифікатами та балами прогресу</li>
+                </ul>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  disabled={deleting}
+                  onClick={() => setDeletingTenant(null)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition"
+                >
+                  Скасувати
+                </button>
+                <button
+                  type="button"
+                  disabled={deleting}
+                  onClick={handleConfirmDelete}
+                  className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-600/25 transition flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {deleting ? (
+                    <>
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      <span>Видалення з Neon DB...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-3.5 w-3.5" />
+                      <span>Так, видалити клієнта та схему</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </SpotifyShell>
   );

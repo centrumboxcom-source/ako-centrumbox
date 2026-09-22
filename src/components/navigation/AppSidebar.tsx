@@ -182,8 +182,12 @@ export function AppSidebar({
               onClick={onCloseMobile}
               className="flex items-center gap-3 group"
             >
-              <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-                <Box className="h-5 w-5" />
+              <div className="h-10 w-10 rounded-2xl overflow-hidden shadow-md shadow-slate-200 border border-slate-200/80 group-hover:scale-105 transition-transform shrink-0 flex items-center justify-center bg-slate-900">
+                <img
+                  src="/logo.png"
+                  alt="CENTRUMBOX"
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div>
                 <div className="flex items-baseline gap-1.5">

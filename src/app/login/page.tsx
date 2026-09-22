@@ -60,8 +60,12 @@ function LoginForm() {
   return (
     <div className="w-full max-w-md p-8 sm:p-10 rounded-3xl relative shadow-2xl bg-white border border-slate-200/90">
       <div className="text-center mb-8">
-        <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-blue-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-600/25 text-white">
-          <Box className="h-7 w-7" />
+        <div className="h-16 w-16 rounded-2xl overflow-hidden mx-auto mb-4 shadow-lg shadow-slate-200 border border-slate-200/90 flex items-center justify-center bg-slate-900">
+          <img
+            src="/logo.png"
+            alt="CENTRUMBOX"
+            className="h-full w-full object-cover"
+          />
         </div>
         <div className="flex items-center justify-center gap-1.5 mb-1.5">
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">

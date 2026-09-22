@@ -151,6 +151,10 @@ export function AppHeader({
               </button>
             )}
 
+            <div className="md:hidden h-8 w-8 rounded-xl overflow-hidden shadow-xs border border-slate-200/80 shrink-0 bg-slate-900">
+              <img src="/logo.png" alt="CENTRUMBOX" className="h-full w-full object-cover" />
+            </div>
+
             <div className="flex items-center gap-2.5 min-w-0">
               <h1 className="text-sm sm:text-base font-black text-slate-900 truncate">
                 {getPageTitle()}
