@@ -108,9 +108,9 @@ export function AppSidebar({
     fetchCurrentUser();
   }, [activeTenant, userOverride]);
 
-  // Load available tenants for admin
+  // Load available tenants only for platform master
   useEffect(() => {
-    if (user?.role === "admin") {
+    if (isPlatformMaster) {
       fetch("/api/admin/tenants", { cache: "no-store" })
         .then((res) => res.json())
         .then((data) => {
@@ -120,7 +120,7 @@ export function AppSidebar({
         })
         .catch(() => {});
     }
-  }, [user?.role]);
+  }, [isPlatformMaster]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
