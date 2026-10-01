@@ -89,7 +89,7 @@ function SuperadminContent() {
       const data = await res.json();
       if (data.authenticated && data.user) {
         setCurrentUser(data.user);
-        if (data.user.role === "admin") {
+        if (data.user.role === "admin" && data.user.tenantSubdomain === "master") {
           loadTenants();
         }
       } else {
@@ -319,7 +319,12 @@ function SuperadminContent() {
     );
   }
 
-  if (currentUser.role !== "admin") {
+  if (currentUser.role !== "admin" || currentUser.tenantSubdomain !== "master") {
+    const isTenantAdmin = currentUser.role === "admin";
+    const returnUrl = isTenantAdmin
+      ? `/admin?tenant=${encodeURIComponent(currentUser.tenantSubdomain)}`
+      : `/learn?tenant=${encodeURIComponent(currentUser.tenantSubdomain)}`;
+
     return (
       <SpotifyShell currentTenant={currentUser?.tenantSubdomain || "master"}>
         <div className="max-w-lg mx-auto px-4 py-20 text-center space-y-6">
@@ -331,20 +336,20 @@ function SuperadminContent() {
               ПОМИЛКА 403 • ДОСТУП ОБМЕЖЕНО
             </span>
             <h1 className="text-2xl font-black text-slate-900 pt-1">
-              Доступ до системної консолі заборонено
+              Доступ до консолі платформи заборонено
             </h1>
             <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-              Цей розділ призначений виключно для Головних Адміністраторів платформи CENTRUMBOX AKO.
-              Ваш акаунт (<strong>{currentUser.email}</strong>) має роль «<strong>{currentUser.role === "student" ? "Студент" : currentUser.role}</strong>» і не має повноважень керувати клієнтськими схемами бази даних.
+              Цей розділ призначений виключно для Головного Адміністратора платформи CENTRUMBOX.
+              Ваш акаунт (<strong>{currentUser.email}</strong>) прив&apos;язаний до організації «<strong>{currentUser.tenantSubdomain}</strong>» і не має повноважень системного управління іншими компаніями.
             </p>
           </div>
           <div className="pt-2 flex justify-center">
             <Link
-              href="/"
+              href={returnUrl}
               className="px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Повернутися до мого навчання
+              {isTenantAdmin ? "Повернутися до моєї HR Панелі" : "Повернутися до мого навчання"}
             </Link>
           </div>
         </div>

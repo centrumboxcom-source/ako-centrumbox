@@ -18,9 +18,9 @@ const createTenantSchema = z.object({
 
 export async function GET() {
   const session = await getCurrentSession();
-  if (!session || session.role !== "admin") {
+  if (!session || session.role !== "admin" || session.tenantSubdomain !== "master") {
     return NextResponse.json(
-      { success: false, error: "Доступ заборонено (403). Потрібні права адміністратора." },
+      { success: false, error: "Доступ заборонено (403). Потрібні права головного адміністратора платформи (Superadmin)." },
       { status: 403 }
     );
   }
@@ -41,9 +41,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const session = await getCurrentSession();
-  if (!session || session.role !== "admin") {
+  if (!session || session.role !== "admin" || session.tenantSubdomain !== "master") {
     return NextResponse.json(
-      { success: false, error: "Доступ заборонено. Створювати організації можуть лише адміністратори." },
+      { success: false, error: "Доступ заборонено (403). Створювати організації може лише головний адміністратор платформи." },
       { status: 403 }
     );
   }

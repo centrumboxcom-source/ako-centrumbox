@@ -151,7 +151,7 @@ export function AppSidebar({
   };
 
   const isAdminOrInstructor = user?.role === "admin" || user?.role === "instructor";
-  const isPlatformMaster = activeTenant === "master" || user?.tenantSubdomain === "master";
+  const isPlatformMaster = user?.tenantSubdomain === "master";
 
   const tenantParam = activeTenant && activeTenant !== "master"
     ? `?tenant=${encodeURIComponent(activeTenant)}`
@@ -216,7 +216,7 @@ export function AppSidebar({
 
           {/* Tenant / Organization Capsule */}
           <div className="relative" ref={tenantMenuRef}>
-            {user?.role === "admin" ? (
+            {isPlatformMaster ? (
               <div>
                 <button
                   type="button"
@@ -400,7 +400,7 @@ export function AppSidebar({
                 {pathname.startsWith("/admin") && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
               </Link>
 
-              {user?.role === "admin" && (
+              {isPlatformMaster && (
                 <Link
                   href="/superadmin"
                   onClick={onCloseMobile}

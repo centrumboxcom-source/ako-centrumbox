@@ -16,9 +16,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getCurrentSession();
-  if (!session || session.role !== "admin") {
+  if (!session || session.role !== "admin" || session.tenantSubdomain !== "master") {
     return NextResponse.json(
-      { success: false, error: "Доступ заборонено (403). Потрібні права адміністратора." },
+      { success: false, error: "Доступ заборонено (403). Потрібні права головного адміністратора платформи (Superadmin)." },
       { status: 403 }
     );
   }
@@ -84,9 +84,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getCurrentSession();
-  if (!session || session.role !== "admin") {
+  if (!session || session.role !== "admin" || session.tenantSubdomain !== "master") {
     return NextResponse.json(
-      { success: false, error: "Доступ заборонено (403). Потрібні права адміністратора." },
+      { success: false, error: "Доступ заборонено (403). Потрібні права головного адміністратора платформи (Superadmin)." },
       { status: 403 }
     );
   }

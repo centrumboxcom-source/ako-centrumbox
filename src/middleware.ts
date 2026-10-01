@@ -112,24 +112,40 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/superadmin", request.url));
   }
 
-  // 4. Cross-Tenant Isolation Check (non-admins cannot access other tenant subdomains)
-  if (subdomain && payload.tenantSubdomain.toLowerCase() !== subdomain.toLowerCase()) {
-    if (payload.role !== "admin") {
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("error", "cross_tenant_forbidden");
-      loginUrl.searchParams.set("userTenant", payload.tenantSubdomain);
-      loginUrl.searchParams.set("targetTenant", subdomain);
-      return NextResponse.redirect(loginUrl);
+  // 4. Cross-Tenant Isolation Check (only platform superadmin with tenantSubdomain === 'master' can switch across tenants)
+  if (subdomain && payload.tenantSubdomain !== "master" && payload.tenantSubdomain.toLowerCase() !== subdomain.toLowerCase()) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("error", "cross_tenant_forbidden");
+    loginUrl.searchParams.set("userTenant", payload.tenantSubdomain);
+    loginUrl.searchParams.set("targetTenant", subdomain);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // 5. Superadmin Protection (/superadmin and /api/admin/tenants: strictly for platform superadmin)
+  const isSuperadminRoute = pathname.startsWith("/superadmin") || pathname.startsWith("/api/admin/tenants");
+  if (isSuperadminRoute) {
+    if (payload.role !== "admin" || payload.tenantSubdomain !== "master") {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json(
+          { success: false, error: "Доступ заборонено (403). Потрібні права головного адміністратора платформи." },
+          { status: 403 }
+        );
+      }
+      const redirectUrl = new URL(
+        payload.role === "admin"
+          ? `/admin?tenant=${encodeURIComponent(payload.tenantSubdomain)}`
+          : `/learn?tenant=${encodeURIComponent(payload.tenantSubdomain)}`,
+        request.url
+      );
+      redirectUrl.searchParams.set("error", "superadmin_forbidden");
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
-  // 5. Role-Based Access Control (RBAC)
-  const isAdminRoute =
-    (pathname.startsWith("/admin") || pathname.startsWith("/superadmin")) &&
-    !pathname.startsWith("/api/admin/tenants");
-
+  // 6. Tenant Admin Route Protection (/admin: requires role === 'admin')
+  const isAdminRoute = pathname.startsWith("/admin");
   if (isAdminRoute) {
-    // Only 'admin' role allowed in /admin and /superadmin
+    // Only 'admin' role allowed in /admin
     if (payload.role !== "admin") {
       const redirectUrl = new URL("/learn", request.url);
       redirectUrl.searchParams.set("tenant", payload.tenantSubdomain);

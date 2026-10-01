@@ -314,7 +314,7 @@ function HomeContent() {
                 </button>
               )}
 
-              {currentUser?.role === "admin" && (
+              {currentUser?.role === "admin" && currentUser?.tenantSubdomain === "master" && (
                 <Link
                   href="/superadmin"
                   className="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200"
@@ -798,7 +798,7 @@ function HomeContent() {
             <span>Multi-Tenant Corporate Learning Platform</span>
           </div>
 
-          {currentUser?.role === "admin" && (
+          {currentUser?.role === "admin" && currentUser?.tenantSubdomain === "master" && (
             <Link
               href="/superadmin"
               className="text-slate-500 hover:text-indigo-600 transition flex items-center gap-1.5 font-medium"

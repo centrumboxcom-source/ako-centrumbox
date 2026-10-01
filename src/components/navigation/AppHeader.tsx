@@ -129,7 +129,7 @@ export function AppHeader({
     return "CENTRUMBOX AKO";
   };
 
-  const isPlatformMaster = activeTenant === "master" || user?.tenantSubdomain === "master";
+  const isPlatformMaster = user?.tenantSubdomain === "master";
   const tenantParam = activeTenant && activeTenant !== "master"
     ? `?tenant=${encodeURIComponent(activeTenant)}`
     : "";
@@ -269,14 +269,16 @@ export function AppHeader({
                             <span>HR Панель & Конструктор</span>
                           </Link>
 
-                          <Link
-                            href="/superadmin"
-                            onClick={() => setProfileDropdownOpen(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition"
-                          >
-                            <Server className="h-3.5 w-3.5 text-indigo-600" />
-                            <span>Консоль Супер-Адміна ⚡</span>
-                          </Link>
+                          {isPlatformMaster && (
+                            <Link
+                              href="/superadmin"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition"
+                            >
+                              <Server className="h-3.5 w-3.5 text-indigo-600" />
+                              <span>Консоль Супер-Адміна ⚡</span>
+                            </Link>
+                          )}
                         </>
                       )}
                     </div>
