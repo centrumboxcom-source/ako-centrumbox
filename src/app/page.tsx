@@ -35,30 +35,12 @@ interface Course {
   id: string;
   title: string;
   description: string | null;
-  isPublished: boolean;
-  createdAt: string;
-}
-
-interface LessonItem {
-  id: string;
-  courseId: string;
-  courseTitle: string;
-  title: string;
-  order: number;
-  points: number;
+  totalLessons: number;
+  completedLessons: number;
+  progressPercent: number;
   isCompleted?: boolean;
-}
-
-interface QuizItem {
-  id: string;
-  courseId: string;
-  courseTitle: string;
-  title: string;
-  description: string | null;
-  passingScore: number;
-  rewardPoints: number;
-  passed?: boolean;
-  score?: number;
+  quizzes?: any[];
+  createdAt?: string;
 }
 
 interface LeaderUser {
@@ -85,8 +67,6 @@ function HomeContent() {
   const activeTenant = resolvedTenant || currentUser?.tenantSubdomain || searchParams?.get("tenant") || "rebrand";
 
   const [courses, setCourses] = useState<Course[]>([]);
-  const [lessonsList, setLessonsList] = useState<LessonItem[]>([]);
-  const [quizzesList, setQuizzesList] = useState<QuizItem[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"learning" | "architecture">("learning");
@@ -109,77 +89,51 @@ function HomeContent() {
     if (!tenant || tenant === "master") return;
     setLoading(true);
     try {
-      // 1. Profile & user points
+      // 1. Dashboard data (contains real courses, real user progress, accurate 0-100% calculation)
+      const dashRes = await fetch(`/api/student/dashboard?tenant=${encodeURIComponent(tenant)}`, {
+        headers: { "x-tenant-override": tenant },
+        cache: "no-store",
+      });
+      const dashData = await dashRes.json();
+      if (dashData.success && dashData.data) {
+        if (Array.isArray(dashData.data.courses)) {
+          setCourses(dashData.data.courses);
+        }
+        if (dashData.data.user) {
+          setCurrentUser((prev: any) => ({ ...prev, ...dashData.data.user }));
+        }
+      } else {
+        // Fallback: fetch raw courses
+        const coursesRes = await fetch(`/api/courses?tenant=${encodeURIComponent(tenant)}`, {
+          headers: { "x-tenant-override": tenant },
+          cache: "no-store",
+        });
+        const coursesData = await coursesRes.json();
+        const loadedCourses: Course[] = (coursesData.success ? coursesData.data || [] : []).map((c: any) => ({
+          id: c.id,
+          title: c.title,
+          description: c.description,
+          totalLessons: 0,
+          completedLessons: 0,
+          progressPercent: 0,
+          isCompleted: false,
+          quizzes: [],
+          createdAt: c.createdAt,
+        }));
+        setCourses(loadedCourses);
+      }
+
+      // 2. Profile for current points and rank
       const profileRes = await fetch(`/api/profile?tenant=${encodeURIComponent(tenant)}`, {
         headers: { "x-tenant-override": tenant },
         cache: "no-store",
       });
       const profileData = await profileRes.json();
       if (profileData.success && profileData.data?.user) {
-        setCurrentUser(profileData.data.user);
+        setCurrentUser((prev: any) => ({ ...prev, ...profileData.data.user }));
       }
 
-      // 2. Courses
-      const coursesRes = await fetch(`/api/courses?tenant=${encodeURIComponent(tenant)}`, {
-        headers: { "x-tenant-override": tenant },
-        cache: "no-store",
-      });
-      const coursesData = await coursesRes.json();
-      const loadedCourses: Course[] = coursesData.success ? coursesData.data || [] : [];
-      setCourses(loadedCourses);
-
-      // 3. Fetch lessons and quizzes for each course to build home cards
-      const allLessons: LessonItem[] = [];
-      const allQuizzes: QuizItem[] = [];
-
-      for (const c of loadedCourses) {
-        // Lessons
-        const lRes = await fetch(`/api/courses/${c.id}/lessons?tenant=${encodeURIComponent(tenant)}`, {
-          headers: { "x-tenant-override": tenant },
-          cache: "no-store",
-        });
-        const lData = await lRes.json();
-        if (lData.success && lData.data) {
-          lData.data.forEach((l: any) => {
-            allLessons.push({
-              id: l.id,
-              courseId: c.id,
-              courseTitle: c.title,
-              title: l.title,
-              order: l.order,
-              points: l.points || 10,
-              isCompleted: true,
-            });
-          });
-        }
-
-        // Quizzes
-        const qRes = await fetch(`/api/courses/${c.id}/quizzes?tenant=${encodeURIComponent(tenant)}`, {
-          headers: { "x-tenant-override": tenant },
-          cache: "no-store",
-        });
-        const qData = await qRes.json();
-        if (qData.success && qData.data) {
-          qData.data.forEach((q: any) => {
-            allQuizzes.push({
-              id: q.id,
-              courseId: c.id,
-              courseTitle: c.title,
-              title: q.title,
-              description: q.description,
-              passingScore: q.passingScore,
-              rewardPoints: q.rewardPoints,
-              passed: true,
-              score: 100,
-            });
-          });
-        }
-      }
-
-      setLessonsList(allLessons);
-      setQuizzesList(allQuizzes);
-
-      // 4. Leaderboard
+      // 3. Leaderboard
       const leaderboardRes = await fetch(`/api/leaderboard?tenant=${encodeURIComponent(tenant)}`, {
         headers: { "x-tenant-override": tenant },
         cache: "no-store",
@@ -189,8 +143,8 @@ function HomeContent() {
         setLeaderboard(leaderboardData.data);
       }
 
-      // 5. Tenants list (for admin control plane)
-      if (user?.role === "admin") {
+      // 4. Tenants list (for master superadmin only)
+      if (user?.role === "admin" && user?.tenantSubdomain === "master") {
         const tenantsRes = await fetch("/api/admin/tenants", { cache: "no-store" });
         const tenantsData = await tenantsRes.json();
         if (tenantsData.success && tenantsData.tenants) {
@@ -383,165 +337,122 @@ function HomeContent() {
               </div>
             </div>
 
-            {/* SECTION 1: LESSON CARDS (Картки уроків на головній) */}
-            <div className="space-y-4">
+            {/* PRIMARY SECTION: COURSES CARDS (Призначені навчальні програми) */}
+            <div className="space-y-5">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
                     <BookOpen className="h-5 w-5 text-indigo-600" />
-                    Картки навчальних модулів та уроків
-                  </h2>
-                  <p className="text-xs text-slate-500">
-                    Натисніть на картку уроку, щоб перейти до вивчення матеріалу або повторити його
-                  </p>
-                </div>
-
-                <Link
-                  href={`/learn?tenant=${encodeURIComponent(activeTenant)}`}
-                  className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
-                >
-                  Усі матеріали курсу →
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {lessonsList.map((lesson) => (
-                  <div
-                    key={lesson.id}
-                    className="ako-card p-5 rounded-2xl flex flex-col justify-between space-y-4 group hover:border-indigo-300"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100 uppercase tracking-wider">
-                          Урок {lesson.order}
-                        </span>
-                        <span className="text-xs font-mono font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Завершено (+{lesson.points} б.)
-                        </span>
-                      </div>
-
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-indigo-600 transition leading-snug">
-                        {lesson.title}
-                      </h3>
-
-                      <p className="text-xs text-slate-500 line-clamp-2">
-                        Курс: {lesson.courseTitle}
-                      </p>
-                    </div>
-
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <span className="text-slate-400 font-medium">Інтерактивний модуль</span>
-                      <Link
-                        href={`/learn?tenant=${encodeURIComponent(activeTenant)}&course=${lesson.courseId}&lesson=${lesson.id}`}
-                        className="font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition"
-                      >
-                        Відкрити урок →
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Quizzes Cards on Home */}
-                {quizzesList.map((quiz) => (
-                  <div
-                    key={quiz.id}
-                    className="ako-card p-5 rounded-2xl flex flex-col justify-between space-y-4 border-amber-200/80 bg-gradient-to-br from-amber-50/40 via-white to-white group"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300 uppercase tracking-wider flex items-center gap-1">
-                          <FileQuestion className="h-3 w-3" />
-                          Атестація
-                        </span>
-                        <span className="text-xs font-mono font-bold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-md border border-amber-200 flex items-center gap-1">
-                          <Check className="h-3.5 w-3.5" />
-                          Складено на 100% (+{quiz.rewardPoints} б.)
-                        </span>
-                      </div>
-
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-indigo-600 transition leading-snug">
-                        {quiz.title}
-                      </h3>
-
-                      <p className="text-xs text-slate-500 line-clamp-2">
-                        {quiz.description || "Контрольне тестування знань з автоматичним підрахунком результату."}
-                      </p>
-                    </div>
-
-                    <div className="pt-3 border-t border-amber-100 flex items-center justify-between text-xs">
-                      <span className="text-amber-800 font-semibold font-mono">Прохідний бал: {quiz.passingScore}%</span>
-                      <Link
-                        href={`/learn?tenant=${encodeURIComponent(activeTenant)}&course=${quiz.courseId}&quiz=${quiz.id}`}
-                        className="font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition"
-                      >
-                        Переглянути тест →
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* SECTION 2: COURSES OVERVIEW CARDS */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg sm:text-xl font-black text-slate-900">
                     Призначені навчальні програми
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Повні навчальні курси, призначені для вашої ролі в організації {activeTenant}
+                    Оберіть курс, щоб переглянути список лекцій та розпочати навчання
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {courses.map((course) => (
-                  <div
-                    key={course.id}
-                    className="ako-card p-6 rounded-2xl flex flex-col justify-between space-y-5"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
-                          АКТИВНИЙ КУРС
-                        </span>
-                        <span className="text-xs font-mono font-bold text-indigo-600">
-                          2 модулі • 1 тест
-                        </span>
-                      </div>
+              {courses.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {courses.map((course) => {
+                    const progress = course.progressPercent || 0;
+                    const isDone = course.isCompleted || progress === 100;
+                    const inProgress = progress > 0 && !isDone;
 
-                      <h3 className="text-base font-bold text-slate-900 leading-snug">
-                        {course.title}
-                      </h3>
+                    return (
+                      <div
+                        key={course.id}
+                        className="ako-card p-6 rounded-3xl flex flex-col justify-between space-y-5 group hover:border-indigo-300 hover:shadow-lg transition-all"
+                      >
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between gap-2">
+                            {isDone ? (
+                              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                                ЗАВЕРШЕНО • 100%
+                              </span>
+                            ) : inProgress ? (
+                              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 uppercase flex items-center gap-1">
+                                <Sparkles className="h-3 w-3 text-indigo-600" />
+                                В ПРОЦЕСІ • {progress}%
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 uppercase">
+                                ДОСТУПНИЙ КУРС
+                              </span>
+                            )}
 
-                      <p className="text-xs text-slate-500 line-clamp-2">
-                        {course.description || "Комплексний навчальний курс для нових інженерів компанії."}
-                      </p>
+                            <span className="text-xs font-mono font-bold text-slate-500">
+                              {course.totalLessons} {course.totalLessons === 1 ? "урок" : course.totalLessons >= 2 && course.totalLessons <= 4 ? "уроки" : "уроків"}
+                              {course.quizzes && course.quizzes.length > 0
+                                ? ` • ${course.quizzes.length} ${course.quizzes.length === 1 ? "тест" : "тестів"}`
+                                : ""}
+                            </span>
+                          </div>
 
-                      {/* Progress Bar */}
-                      <div className="space-y-1.5 pt-1">
-                        <div className="flex justify-between text-[11px] font-semibold text-slate-600">
-                          <span>Прогрес проходження</span>
-                          <span className="font-mono text-emerald-600 font-bold">100%</span>
+                          <div>
+                            <h3 className="text-base sm:text-lg font-black text-slate-900 group-hover:text-indigo-600 transition leading-snug line-clamp-2">
+                              {course.title}
+                            </h3>
+                            <p className="text-xs text-slate-500 line-clamp-2 mt-1.5 leading-relaxed">
+                              {course.description || "Комплексна програма корпоративного навчання для співробітників."}
+                            </p>
+                          </div>
+
+                          {/* Dynamic Real Progress Bar */}
+                          <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                            <div className="flex justify-between text-[11px] font-semibold text-slate-600">
+                              <span>
+                                {course.totalLessons > 0
+                                  ? `Пройдено ${course.completedLessons} з ${course.totalLessons} уроків`
+                                  : "Матеріали формуються"}
+                              </span>
+                              <span className="font-mono text-indigo-600 font-bold">
+                                {progress}%
+                              </span>
+                            </div>
+                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/80">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${
+                                  isDone
+                                    ? "bg-emerald-500"
+                                    : "bg-gradient-to-r from-indigo-500 to-blue-500"
+                                }`}
+                                style={{ width: `${Math.min(100, Math.max(progress, progress > 0 ? 5 : 0))}%` }}
+                              />
+                            </div>
+                          </div>
                         </div>
-                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                          <div className="h-full bg-gradient-to-r from-emerald-500 to-indigo-500 rounded-full w-full" />
-                        </div>
-                      </div>
-                    </div>
 
-                    <Link
-                      href={`/learn?tenant=${encodeURIComponent(activeTenant)}&course=${course.id}`}
-                      className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow-sm"
-                    >
-                      <Play className="h-3.5 w-3.5 fill-white" />
-                      <span>Відкрити навчання курсу</span>
-                    </Link>
+                        <Link
+                          href={`/learn?tenant=${encodeURIComponent(activeTenant)}&course=${course.id}`}
+                          className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow-sm ${
+                            isDone
+                              ? "bg-slate-900 hover:bg-slate-800 text-white"
+                              : inProgress
+                              ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20"
+                              : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                          }`}
+                        >
+                          <Play className="h-3.5 w-3.5 fill-white" />
+                          <span>{inProgress ? "Продовжити навчання →" : "Перейти до курсу →"}</span>
+                        </Link>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="p-8 sm:p-12 text-center rounded-3xl border border-dashed border-slate-200 bg-white space-y-3">
+                  <div className="h-12 w-12 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto">
+                    <BookOpen className="h-6 w-6" />
                   </div>
-                ))}
-              </div>
+                  <h3 className="text-base font-black text-slate-900">
+                    Навчальних програм наразі не призначено
+                  </h3>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    Очікуйте публікації нових модулів та навчальних матеріалів від HR-адміністратора вашої компанії.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* SECTION 3: LEADERBOARD WIDGET */}

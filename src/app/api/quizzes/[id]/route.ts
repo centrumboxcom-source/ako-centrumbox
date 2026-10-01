@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, and } from "drizzle-orm";
 import { withTenantDb } from "@/db/connection-manager";
-import { quizzes, questions, questionOptions } from "@/db/schema/tenant";
+import { quizzes, questions, questionOptions, userProgress } from "@/db/schema/tenant";
 import { getCurrentSession } from "@/lib/auth/session";
 import { TENANT_HEADER } from "@/lib/tenant-context";
 
@@ -61,6 +61,31 @@ export async function GET(
 
       if (!quiz) return null;
 
+      // Anti-cheat protection: If student, ensure prerequisite lesson is completed
+      if (!isAdminOrInstructor && session) {
+        if (quiz.lessonId) {
+          const [completedLesson] = await db
+            .select()
+            .from(userProgress)
+            .where(
+              and(
+                eq(userProgress.userId, session.userId),
+                eq(userProgress.activityType, "lesson"),
+                eq(userProgress.lessonId, quiz.lessonId)
+              )
+            )
+            .limit(1);
+
+          if (!completedLesson) {
+            return {
+              locked: true,
+              error: "Тестування заблоковано до проходження лекції. Спочатку завершіть урок, щоб відкрити тест.",
+              lessonId: quiz.lessonId,
+            };
+          }
+        }
+      }
+
       // Fetch questions
       const quizQuestions = await db
         .select()
@@ -108,6 +133,18 @@ export async function GET(
 
     if (!quizData) {
       return NextResponse.json({ success: false, error: "Тест не знайдено" }, { status: 404 });
+    }
+
+    if ("locked" in quizData && (quizData as any).locked) {
+      return NextResponse.json(
+        {
+          success: false,
+          locked: true,
+          error: (quizData as any).error,
+          lessonId: (quizData as any).lessonId,
+        },
+        { status: 403 }
+      );
     }
 
     return NextResponse.json({

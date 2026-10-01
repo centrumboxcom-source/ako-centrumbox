@@ -68,6 +68,9 @@ export function AppSidebar({
 
   const tenantMenuRef = useRef<HTMLDivElement>(null);
 
+  const isAdminOrInstructor = user?.role === "admin" || user?.role === "instructor";
+  const isPlatformMaster = user?.tenantSubdomain === "master";
+
   useEffect(() => {
     if (userOverride) {
       setUser(userOverride);
@@ -149,9 +152,6 @@ export function AppSidebar({
     setUser(null);
     window.location.href = "/login";
   };
-
-  const isAdminOrInstructor = user?.role === "admin" || user?.role === "instructor";
-  const isPlatformMaster = user?.tenantSubdomain === "master";
 
   const tenantParam = activeTenant && activeTenant !== "master"
     ? `?tenant=${encodeURIComponent(activeTenant)}`

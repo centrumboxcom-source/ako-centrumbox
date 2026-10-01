@@ -183,9 +183,12 @@ export function QuizRunner({ quizId, tenantSubdomain, onCompleted }: QuizRunnerP
 
   if (error || !quiz) {
     return (
-      <div className="p-6 rounded-2xl bg-rose-950/40 border border-rose-800/80 text-rose-300 text-sm flex items-center gap-3">
-        <AlertCircle className="h-5 w-5 text-rose-400 shrink-0" />
-        <span>{error || "Тест не знайдено."}</span>
+      <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-sm flex items-start gap-3 shadow-sm">
+        <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <p className="font-bold text-slate-900">Доступ обмежено</p>
+          <p className="text-xs text-amber-800 leading-relaxed">{error || "Тест не знайдено."}</p>
+        </div>
       </div>
     );
   }

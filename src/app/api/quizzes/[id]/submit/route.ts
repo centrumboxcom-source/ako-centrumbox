@@ -73,6 +73,26 @@ export async function POST(
         throw new Error("Тест не знайдено");
       }
 
+      // Security: verify prerequisite lesson was completed
+      const isPrivileged = session?.role === "admin" || session?.role === "instructor";
+      if (!isPrivileged && quiz.lessonId) {
+        const [completedLesson] = await db
+          .select()
+          .from(userProgress)
+          .where(
+            and(
+              eq(userProgress.userId, currentUser.id),
+              eq(userProgress.activityType, "lesson"),
+              eq(userProgress.lessonId, quiz.lessonId)
+            )
+          )
+          .limit(1);
+
+        if (!completedLesson) {
+          throw new Error("Тестування заблоковано. Необхідно спочатку завершити вивчення лекції.");
+        }
+      }
+
       // 3. Fetch questions and their options directly from DB (with correct answers!)
       const dbQuestions = await db
         .select()

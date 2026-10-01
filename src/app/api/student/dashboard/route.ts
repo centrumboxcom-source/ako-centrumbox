@@ -83,11 +83,12 @@ export async function GET(request: NextRequest) {
         .where(eq(users.id, session.userId))
         .limit(1);
 
-      // 2. Fetch all published courses
+      // 2. Fetch courses (admins see drafts too, students see published)
+      const isAdminOrInstructor = session.role === "admin" || session.role === "instructor";
       const allCourses = await db
         .select()
         .from(courses)
-        .where(eq(courses.isPublished, true))
+        .where(isAdminOrInstructor ? sql`1=1` : eq(courses.isPublished, true))
         .orderBy(desc(courses.createdAt));
 
       // 3. Fetch all lessons and quizzes for these courses
@@ -204,6 +205,8 @@ export async function GET(request: NextRequest) {
           points: currentUser?.points || 0,
         },
         courses: courseCards,
+        completedLessonIds: Array.from(completedLessonIds),
+        passedQuizIds: Array.from(passedQuizIds),
       };
     });
 
